@@ -1,0 +1,440 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Camo Contest 2026</title>
+
+<style>
+:root{
+  color-scheme:dark;
+  --bg:#111318;--panel:#1a1e26;--panel2:#222834;--line:#343c4a;
+  --text:#eef2f7;--muted:#aeb7c5;--accent:#79a8ff;--danger:#ff8b8b
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 system-ui,sans-serif}
+main{width:min(1500px,calc(100% - 28px));margin:20px auto}
+h1{margin:0 0 6px}
+.sub{margin:0 0 18px;color:var(--muted)}
+.layout{display:grid;grid-template-columns:360px minmax(0,1fr);gap:18px;align-items:start}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px}
+.stack>*+*{margin-top:14px}
+label.title{display:block;margin-bottom:6px;font-weight:700}
+select,button,input[type=number],textarea{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:9px;background:var(--panel2);color:var(--text);font:inherit}
+input[type=range],input[type=file]{width:100%}
+button{border:0;background:var(--accent);color:#0f1521;font-weight:750;cursor:pointer}
+button:disabled{opacity:.45;cursor:not-allowed}
+.row{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center}
+.value{min-width:70px;text-align:right;color:var(--muted);font-variant-numeric:tabular-nums}
+.status{min-height:22px;color:var(--muted)}
+.status.error{color:var(--danger)}
+.preview{position:relative;width:100%;background:#0d1016;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.preview canvas,.preview img{position:absolute;inset:0;width:100%;height:100%;display:block}
+.preview img{pointer-events:none;object-fit:fill}
+.texture-tile-preview{
+  display:none;
+  width:min(100%,260px);
+  aspect-ratio:1;
+  object-fit:contain;
+  margin:10px auto 0;
+  background:#0e1016;
+  border:1px solid var(--line);
+  border-radius:9px
+}
+.note,.info{color:var(--muted);font-size:13px}
+code,textarea{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+textarea{min-height:170px;resize:vertical}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+.countdown-card{
+  margin-top:16px;
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:16px;
+  text-align:center;
+}
+.countdown-title{margin:0 0 10px;color:var(--muted);font-weight:700}
+.countdown-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.countdown-unit{
+  background:var(--panel2);
+  border:1px solid var(--line);
+  border-radius:9px;
+  padding:10px 5px
+}
+.countdown-number{
+  display:block;
+  font-size:clamp(20px,3vw,30px);
+  line-height:1;
+  font-weight:800;
+  font-variant-numeric:tabular-nums
+}
+.countdown-label{
+  display:block;
+  margin-top:5px;
+  color:var(--muted);
+  font-size:11px;
+  text-transform:uppercase
+}
+.countdown-finished{grid-column:1/-1;font-size:24px;font-weight:800}
+
+@media(max-width:900px){.layout{grid-template-columns:1fr}}
+</style>
+
+</head>
+<body>
+<main>
+<h1>Camo Contest 2026</h1>
+<p class="sub">Load your 512*512 texture and select your template. Drag the slider to view different variations. Instructional Video: https://youtu.be/-kb414gQ7CY | Thanks to imakamikaze69 for beta test</p>
+<div class="layout">
+<div>
+<section class="panel stack">
+  <div>
+    <label class="title" for="templateSelect">Template</label>
+    <select id="templateSelect"></select>
+  </div>
+
+  <div>
+    <label class="title" for="textureInput">Square texture</label>
+    <input id="textureInput" type="file" accept="image/png,image/jpeg,image/webp">
+    <img id="textureTilePreview" class="texture-tile-preview" alt="Single uploaded texture tile preview">
+  </div>
+
+  <div class="row">
+    <label for="tiles"><strong>Tiles per side</strong></label>
+    <span id="tilesValue" class="value">1.0 × 1.0</span>
+  </div>
+  <input id="tiles" type="range" min="1" max="20" value="1" step="0.1">
+
+  <button id="renderButton">Render fixed view</button>
+  <button id="downloadButton" disabled>Download PNG</button>
+
+  <p id="status" class="status">Loading template…</p>
+  <p class="note"></p>
+</section>
+
+<section class="countdown-card" aria-live="polite">
+  <p class="countdown-title">Time left until contest end</p>
+  <div id="countdownGrid" class="countdown-grid">
+    <div class="countdown-unit"><span id="countdownDays" class="countdown-number">0</span><span class="countdown-label">Days</span></div>
+    <div class="countdown-unit"><span id="countdownHours" class="countdown-number">00</span><span class="countdown-label">Hours</span></div>
+    <div class="countdown-unit"><span id="countdownMinutes" class="countdown-number">00</span><span class="countdown-label">Minutes</span></div>
+    <div class="countdown-unit"><span id="countdownSeconds" class="countdown-number">00</span><span class="countdown-label">Seconds</span></div>
+  </div>
+</section>
+</div>
+
+<section class="panel">
+  <div class="preview">
+    <div id="rendererHost"></div>
+    <img id="templateOverlay" alt="Template overlay">
+  </div>
+</section>
+</div>
+</main>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.180.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.180.0/examples/jsm/"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from "three";
+import { FBXLoader } from "three/addons/loaders/FBXLoader.js";
+
+
+const DATA_DIRECTORY = "data/";
+
+const templates = [
+  {
+    name: "E-100",
+    templateFile: "template_1.png",
+    modelFile: "model_1.fbx",
+    viewCode: {
+  "position": [
+    0,
+    0,
+    0
+  ],
+  "rotation": [
+    0,
+    0,
+    0
+  ],
+  "scale": 1,
+  "cameraPosition": [
+    517.918773,
+    405.899339,
+    -918.66521
+  ],
+  "cameraTarget": [
+    33.624506,
+    137.243081,
+    -61.628878
+  ],
+      fov: 35
+}
+  },
+  {
+    name: "IS-7",
+    templateFile: "template_2.png",
+    modelFile: "model_2.fbx",
+    viewCode: {
+  "position": [
+    0,
+    0,
+    0
+  ],
+  "rotation": [
+    0,
+    0,
+    0
+  ],
+  "scale": 1,
+  "cameraPosition": [
+    1045.126638,
+    401.352904,
+    -1407.874744
+  ],
+  "cameraTarget": [
+    168.392108,
+    195.011807,
+    -359.404475
+  ],
+  "fov": 16
+}
+  }
+];
+
+
+const templateSelect=document.getElementById("templateSelect");
+const textureInput=document.getElementById("textureInput");
+const textureTilePreview=document.getElementById("textureTilePreview");
+const tiles=document.getElementById("tiles");
+const tilesValue=document.getElementById("tilesValue");
+const renderButton=document.getElementById("renderButton");
+const downloadButton=document.getElementById("downloadButton");
+const status=document.getElementById("status");
+const host=document.getElementById("rendererHost");
+const preview=document.querySelector(".preview");
+const overlay=document.getElementById("templateOverlay");
+
+const countdownDays=document.getElementById("countdownDays");
+const countdownHours=document.getElementById("countdownHours");
+const countdownMinutes=document.getElementById("countdownMinutes");
+const countdownSeconds=document.getElementById("countdownSeconds");
+const countdownGrid=document.getElementById("countdownGrid");
+
+// Local time: August 13, 2026 at 12:00 AM.
+const COUNTDOWN_TARGET=new Date(2026,7,13,0,0,0);
+
+function updateCountdown(){
+  const remaining=COUNTDOWN_TARGET.getTime()-Date.now();
+
+  if(remaining<=0){
+    countdownGrid.innerHTML='<div class="countdown-finished">August 13 has arrived</div>';
+    return false;
+  }
+
+  const totalSeconds=Math.floor(remaining/1000);
+  countdownDays.textContent=String(Math.floor(totalSeconds/86400));
+  countdownHours.textContent=String(Math.floor((totalSeconds%86400)/3600)).padStart(2,"0");
+  countdownMinutes.textContent=String(Math.floor((totalSeconds%3600)/60)).padStart(2,"0");
+  countdownSeconds.textContent=String(totalSeconds%60).padStart(2,"0");
+  return true;
+}
+
+let texturePreviewUrl = null;
+let selectedTemplate=null;
+let model=null;
+let texture=null;
+
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(0x000000);
+const camera=new THREE.PerspectiveCamera(35,1,0.01,10000);
+
+const renderer=new THREE.WebGLRenderer({antialias:true,alpha:false,preserveDrawingBuffer:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.setSize(1024,1024,false);
+renderer.outputColorSpace=THREE.SRGBColorSpace;
+host.appendChild(renderer.domElement);
+
+scene.add(new THREE.HemisphereLight(0xffffff,0x444444,2.0));
+const key=new THREE.DirectionalLight(0xffffff,2.5);
+key.position.set(5,8,6);
+scene.add(key);
+
+
+function resizeRendererToTemplate() {
+  if (!overlay.naturalWidth || !overlay.naturalHeight) return;
+
+  const aspect = overlay.naturalWidth / overlay.naturalHeight;
+  const availableWidth = Math.max(1, preview.clientWidth);
+  const displayHeight = availableWidth / aspect;
+
+  preview.style.height = `${displayHeight}px`;
+
+  const pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
+  const renderWidth = Math.max(1, Math.round(availableWidth * pixelRatio));
+  const renderHeight = Math.max(1, Math.round(displayHeight * pixelRatio));
+
+  renderer.setPixelRatio(1);
+  renderer.setSize(renderWidth, renderHeight, false);
+
+  renderer.domElement.style.width = `${availableWidth}px`;
+  renderer.domElement.style.height = `${displayHeight}px`;
+
+  camera.aspect = aspect;
+  camera.updateProjectionMatrix();
+  renderer.render(scene, camera);
+}
+
+function setStatus(message,error=false){
+  status.textContent=message;
+  status.classList.toggle("error",error);
+}
+
+function populateTemplates(){
+  templateSelect.innerHTML="";
+  templates.forEach((t,i)=>{
+    const o=document.createElement("option");
+    o.value=String(i);o.textContent=t.name;templateSelect.appendChild(o);
+  });
+}
+
+function disposeModel(object){
+  if(!object)return;
+  object.traverse(child=>{
+    if(child.geometry)child.geometry.dispose();
+    if(child.material){
+      const list=Array.isArray(child.material)?child.material:[child.material];
+      list.forEach(m=>m.dispose());
+    }
+  });
+  scene.remove(object);
+}
+
+function applyTexture(){
+  if(!model||!texture)return;
+  const repeat=Number(tiles.value);
+  texture.wrapS=THREE.RepeatWrapping;
+  texture.wrapT=THREE.RepeatWrapping;
+  texture.repeat.set(repeat,repeat);
+  texture.needsUpdate=true;
+
+  model.traverse(child=>{
+    if(!child.isMesh)return;
+    child.material=new THREE.MeshStandardMaterial({
+      map:texture,color:0xffffff,roughness:0.75,metalness:0.05,side:THREE.DoubleSide
+    });
+  });
+}
+
+function applyLockedView(){
+  if(!model||!selectedTemplate)return;
+  const code=selectedTemplate.viewCode;
+  model.position.fromArray(code.position||[0,0,0]);
+  model.rotation.set(...(code.rotation||[0,0,0]));
+  model.scale.setScalar(code.scale??1);
+  camera.position.fromArray(code.cameraPosition||[0,0,5]);
+  camera.fov=code.fov??35;
+  camera.lookAt(new THREE.Vector3().fromArray(code.cameraTarget||[0,0,0]));
+  camera.updateProjectionMatrix();
+}
+
+async function loadTemplate(index){
+  selectedTemplate=templates[index];
+  overlay.src=DATA_DIRECTORY+selectedTemplate.templateFile;
+  setStatus(`Loading ${selectedTemplate.modelFile}…`);
+
+  try{
+    const loader=new FBXLoader();
+    const loaded=await loader.loadAsync(DATA_DIRECTORY+selectedTemplate.modelFile);
+    disposeModel(model);
+    model=loaded;
+    scene.add(model);
+    applyTexture();
+    applyLockedView();
+    renderer.render(scene,camera);
+    downloadButton.disabled=!texture;
+    setStatus(`Loaded ${selectedTemplate.name}.`);
+  }catch(error){
+    setStatus(`Could not load ${selectedTemplate.modelFile}. Check the data folder and run through a local server.`,true);
+  }
+}
+
+textureInput.addEventListener("change",async()=>{
+  const file=textureInput.files[0];
+  if(!file)return;
+  const bitmap=await createImageBitmap(file);
+  if(bitmap.width!==bitmap.height){
+    setStatus(`Texture is ${bitmap.width} × ${bitmap.height}. Select a square image.`,true);
+    bitmap.close();
+    return;
+  }
+  if(texturePreviewUrl)URL.revokeObjectURL(texturePreviewUrl);
+  texturePreviewUrl=URL.createObjectURL(file);
+  textureTilePreview.src=texturePreviewUrl;
+  textureTilePreview.style.display="block";
+
+  if(texture)texture.dispose();
+  texture=new THREE.Texture(bitmap);
+  texture.colorSpace=THREE.SRGBColorSpace;
+  texture.needsUpdate=true;
+  applyTexture();
+  renderer.render(scene,camera);
+  downloadButton.disabled=!model;
+  setStatus(`Loaded texture ${file.name}.`);
+});
+
+tiles.addEventListener("input",()=>{
+  tilesValue.textContent=`${Number(tiles.value).toFixed(1)} × ${Number(tiles.value).toFixed(1)}`;
+  applyTexture();
+  renderer.render(scene,camera);
+});
+
+templateSelect.addEventListener("change",()=>loadTemplate(Number(templateSelect.value)));
+renderButton.addEventListener("click",()=>{
+  applyLockedView();
+  renderer.render(scene,camera);
+  setStatus(`Rendered ${selectedTemplate.name}.`);
+});
+
+downloadButton.addEventListener("click",()=>{
+  applyLockedView();
+  renderer.render(scene,camera);
+  const out=document.createElement("canvas");
+  out.width=overlay.naturalWidth;
+  out.height=overlay.naturalHeight;
+  const ctx=out.getContext("2d");
+  ctx.drawImage(renderer.domElement,0,0,out.width,out.height);
+  ctx.drawImage(overlay,0,0,out.width,out.height);
+  const a=document.createElement("a");
+  a.href=out.toDataURL("image/png");
+  a.download=`${selectedTemplate.name.replace(/\s+/g,"_").toLowerCase()}_fixed.png`;
+  a.click();
+});
+
+overlay.addEventListener("load", resizeRendererToTemplate);
+window.addEventListener("resize", resizeRendererToTemplate);
+
+updateCountdown();
+const countdownTimer=setInterval(()=>{
+  if(!updateCountdown()) clearInterval(countdownTimer);
+},1000);
+
+populateTemplates();
+loadTemplate(0);
+
+function animate(){
+  requestAnimationFrame(animate);
+  renderer.render(scene,camera);
+}
+animate();
+</script>
+</body>
+</html>
