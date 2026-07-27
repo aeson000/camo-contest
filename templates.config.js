@@ -74,10 +74,21 @@ dataDirectory: "data/",
   ],
   "scale": 1,
   "modelRotationY": 7,
+  "focusPoint": [
+    0,
+    167.796828,
+    -75.927452
+  ],
+  "viewDirection": [
+    0.611959,
+    0.230779,
+    -0.75647
+  ],
+  "framingRadius": 480.85235,
   "cameraPosition": [
-    719.933013,
-    469.330679,
-    -974.389461
+    728.323385,
+    442.458941,
+    -976.241818
   ],
   "cameraTarget": [
     0,
@@ -85,10 +96,11 @@ dataDirectory: "data/",
     -75.927452
   ],
   "fov": 44,
-  "near": 409.255581,
-  "far": 1983.137792,
+  "near": 409.321362,
+  "far": 1983.203573,
   "modelVerticalOffset": 20,
-  "modelHorizontalOffset": -18.5
+  "modelHorizontalOffset": -18.5,
+  "viewportAspect": 1.781302
 }
     },
 	    {
@@ -114,11 +126,22 @@ dataDirectory: "data/",
   ],
   "rotation": [
     0,
-    -0.628319,
+    0.069813,
     0
   ],
   "scale": 1,
   "modelRotationY": 4,
+  "focusPoint": [
+    0,
+    167.796828,
+    -75.927452
+  ],
+  "viewDirection": [
+    0.616742,
+    0.164986,
+    -0.769681
+  ],
+  "framingRadius": 421.45469,
   "cameraPosition": [
     734.015926,
     364.1553,
@@ -132,8 +155,9 @@ dataDirectory: "data/",
   "fov": 39,
   "near": 133.870719,
   "far": 1964.851365,
-  "modelVerticalOffset": 16.5,
-  "modelHorizontalOffset": -15
+  "modelVerticalOffset": 20,
+  "modelHorizontalOffset": -15,
+  "viewportAspect": 1.781302
 }
     },
 	    {
@@ -164,6 +188,17 @@ dataDirectory: "data/",
   ],
   "scale": 1,
   "modelRotationY": 4,
+  "focusPoint": [
+    0,
+    167.796828,
+    -75.927452
+  ],
+  "viewDirection": [
+    0.596393,
+    0.130215,
+    -0.79206
+  ],
+  "framingRadius": 455.978588,
   "cameraPosition": [
     747.155481,
     330.929326,
@@ -178,7 +213,8 @@ dataDirectory: "data/",
   "near": 224.7977,
   "far": 2017.673075,
   "modelVerticalOffset": 16.5,
-  "modelHorizontalOffset": -15
+  "modelHorizontalOffset": -15,
+  "viewportAspect": 1.781302
 }
     },
 	    {
@@ -209,6 +245,17 @@ dataDirectory: "data/",
   ],
   "scale": 1,
   "modelRotationY": 4,
+  "focusPoint": [
+    0,
+    167.796828,
+    -75.927452
+  ],
+  "viewDirection": [
+    -0.504238,
+    0.194629,
+    -0.841346
+  ],
+  "framingRadius": 455.978588,
   "cameraPosition": [
     -631.705088,
     411.626183,
@@ -223,7 +270,8 @@ dataDirectory: "data/",
   "near": 419.768823,
   "far": 1896.398378,
   "modelVerticalOffset": 16.5,
-  "modelHorizontalOffset": -15
+  "modelHorizontalOffset": -15,
+  "viewportAspect": 1.781302
 }
     }
 	

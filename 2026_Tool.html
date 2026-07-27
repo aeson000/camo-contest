@@ -55,7 +55,7 @@ textarea{min-height:180px;resize:vertical;font-family:ui-monospace,SFMono-Regula
 <input id="modelRotation" type="range" min="-180" max="180" value="0" step="1">
 
 
-<button id="resetButton">Reset Camera</button>
+<button id="resetButton">Reset view</button>
 <button id="downloadButton" disabled data-i18n="downloadPng">Download PNG</button>
 
 <section class="countdown-card" aria-live="polite">
@@ -87,7 +87,7 @@ import { FBXLoader } from "three/addons/loaders/FBXLoader.js";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 
-const { dataDirectory: DATA_DIRECTORY, templates, discordUrl, locale } = window.FBX_TEMPLATE_CONFIG;
+const { dataDirectory: DATA_DIRECTORY, templates, discordUrl, locale, viewportAspect } = window.FBX_TEMPLATE_CONFIG;
 
 const i18n=locale||{};
 function tr(key,values={}){
@@ -161,7 +161,23 @@ function updateCountdown(){
 function updateAniso(){const low=maxAnisotropy<QUALITY_THRESHOLD;anisoStatus.textContent=`${tr("anisotropicFiltering")}: ${maxAnisotropy}x`;anisoStatus.classList.toggle("low",low);anisoWarning.style.display=low?"block":"none";if(low)anisoStatus.textContent+=` - ${tr("lowAngledTextureQuality")}`;}
 function p(file){return DATA_DIRECTORY+file}
 function populate(){templateSelect.innerHTML="";templates.forEach((t,i)=>{const o=document.createElement("option");o.value=String(i);o.textContent=t.name;templateSelect.appendChild(o)})}
-function resizeRenderer(){let aspect=16/9;if(templateBackground.naturalWidth&&templateBackground.naturalHeight)aspect=templateBackground.naturalWidth/templateBackground.naturalHeight;const w=Math.max(1,preview.clientWidth),h=w/aspect;preview.style.height=`${h}px`;renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));renderer.setSize(w,h,false);camera.aspect=aspect;applyViewportFraming()}
+function resizeRenderer(){
+  const aspect=Number(viewportAspect)||16/9;
+  const w=Math.max(1,preview.clientWidth);
+  const h=Math.round(w/aspect);
+  preview.style.height=`${h}px`;
+  renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));
+  renderer.setSize(w,h,false);
+  camera.aspect=aspect;
+
+  if(model){
+    const live=currentCode();
+    applyResponsiveCamera(live);
+    updateCameraClipping(live);
+  }else{
+    applyViewportFraming();
+  }
+}
 function configure(tex,color=false){tex.flipY=false;tex.wrapS=THREE.ClampToEdgeWrapping;tex.wrapT=THREE.ClampToEdgeWrapping;tex.repeat.set(1,1);tex.offset.set(0,0);tex.rotation=0;tex.minFilter=THREE.LinearMipmapLinearFilter;tex.magFilter=THREE.LinearFilter;tex.generateMipmaps=true;tex.anisotropy=maxAnisotropy;tex.colorSpace=color?THREE.SRGBColorSpace:THREE.NoColorSpace;tex.needsUpdate=true;return tex}
 function loadTexture(file,color=false){return new Promise((resolve,reject)=>textureLoader.load(p(file),t=>resolve(configure(t,color)),undefined,()=>reject(new Error(`Could not load ${p(file)}`))))}
 async function loadSet(c,mask){const q=[loadTexture(c.baseColorMap,true),loadTexture(c.baseNormalMap),loadTexture(c.baseRMMap),loadTexture(c.miscMap)];if(mask)q.push(loadTexture(c.maskMap));const a=await Promise.all(q);return{baseColor:a[0],normal:a[1],rm:a[2],misc:a[3],mask:mask?a[4]:null}}
@@ -261,10 +277,13 @@ function rebuild(){if(!bodySource)return;buildProcessed();applyMaterials()}
 function disposeModel(o){if(!o)return;disposeGenerated();o.traverse(ch=>ch.geometry?.dispose?.());scene.remove(o)}
 async function uploadCamo(file){if(!file)return;const b=await createImageBitmap(file);if(b.width!==b.height){b.close();setStatus(tr("squareTextureError",{width:b.width,height:b.height}),true);return}camoBitmap?.close?.();camoBitmap=b;if(camoPreviewUrl)URL.revokeObjectURL(camoPreviewUrl);camoPreviewUrl=URL.createObjectURL(file);camoPreview.src=camoPreviewUrl;camoPreview.style.display="block";rebuild();setStatus(tr("camouflageLoaded",{file:file.name}))}
 async function loadTemplate(i){selectedTemplate=templates[i];tiles.value=String(selectedTemplate.defaultTiles??1);tilesValue.textContent=`${Number(tiles.value).toFixed(1)} x ${Number(tiles.value).toFixed(1)}`;templateBackground.src=p(selectedTemplate.templateFile);setStatus(tr("loadingModel"));try{const [mdl,b]=await Promise.all([fbxLoader.loadAsync(p(selectedTemplate.modelFile)),loadSet(selectedTemplate.body,true)]);disposeModel(model);model=mdl;bodySource=b;scene.add(model);buildProcessed();applyMaterials();applyViewCode(selectedTemplate.viewCode);downloadButton.disabled=false;setStatus(tr("templateLoaded",{template:selectedTemplate.name}))}catch(e){console.error(e);setStatus(e.message,true)}}
-function getModelCenter(){
-  if(!model)return new THREE.Vector3();
 
+function getVisualModelBox(){
   const box=new THREE.Box3();
+
+  if(!model){
+    return box;
+  }
 
   model.updateWorldMatrix(true,true);
 
@@ -273,8 +292,6 @@ function getModelCenter(){
 
     const name=`${object.name||""} ${object.material?.name||""}`.toLowerCase();
 
-    // Ignore common FBX helper and collision meshes that can sit far from
-    // the rendered tank and skew the visual center.
     if(/collision|collider|helper|dummy|locator|bounding|bbox/.test(name))return;
 
     if(!object.geometry.boundingBox){
@@ -287,28 +304,122 @@ function getModelCenter(){
     box.union(meshBox);
   });
 
-  if(box.isEmpty()){
-    return new THREE.Box3().setFromObject(model).getCenter(new THREE.Vector3());
+  if(box.isEmpty() && model){
+    return new THREE.Box3().setFromObject(model);
   }
 
-  return box.getCenter(new THREE.Vector3());
+  return box;
 }
 
-function setOrbitTarget(code=null){
-  if(!model)return;
+function getModelCenter(){
+  if(!model)return new THREE.Vector3();
+  return getVisualModelBox().getCenter(new THREE.Vector3());
+}
 
-  const savedTarget=code?.cameraTarget;
+function getModelRadius(){
+  if(!model)return 1;
+  const sphere=new THREE.Sphere();
+  getVisualModelBox().getBoundingSphere(sphere);
+  return (Number.isFinite(sphere.radius) && sphere.radius>0) ? sphere.radius : 1;
+}
+
+function resolveFocusPoint(code=null){
+  const focus=code?.focusPoint ?? code?.cameraTarget;
 
   if(
-    Array.isArray(savedTarget) &&
-    savedTarget.length===3 &&
-    savedTarget.every(Number.isFinite)
+    Array.isArray(focus) &&
+    focus.length===3 &&
+    focus.every(value=>Number.isFinite(Number(value)))
   ){
-    controls.target.fromArray(savedTarget);
-  }else{
-    controls.target.copy(getModelCenter());
+    return new THREE.Vector3().fromArray(focus.map(Number));
   }
 
+  return getModelCenter();
+}
+
+function resolveViewDirection(code=null, focusPoint=null){
+  const direct=code?.viewDirection;
+
+  if(
+    Array.isArray(direct) &&
+    direct.length===3 &&
+    direct.every(value=>Number.isFinite(Number(value)))
+  ){
+    const vector=new THREE.Vector3().fromArray(direct.map(Number));
+    if(vector.lengthSq()>1e-8){
+      return vector.normalize();
+    }
+  }
+
+  const focus=focusPoint ?? resolveFocusPoint(code);
+  const cameraPos=code?.cameraPosition;
+
+  if(
+    Array.isArray(cameraPos) &&
+    cameraPos.length===3 &&
+    cameraPos.every(value=>Number.isFinite(Number(value)))
+  ){
+    const vector=new THREE.Vector3().fromArray(cameraPos.map(Number)).sub(focus);
+    if(vector.lengthSq()>1e-8){
+      return vector.normalize();
+    }
+  }
+
+  const liveVector=camera.position.clone().sub(controls.target);
+  if(liveVector.lengthSq()>1e-8){
+    return liveVector.normalize();
+  }
+
+  return new THREE.Vector3(0,0,1);
+}
+
+function resolveFramingRadius(code=null, focusPoint=null){
+  const explicit=Number(code?.framingRadius);
+  if(Number.isFinite(explicit) && explicit>0){
+    return explicit;
+  }
+
+  const focus=focusPoint ?? resolveFocusPoint(code);
+
+  let distance=null;
+  const cameraPos=code?.cameraPosition;
+
+  if(
+    Array.isArray(cameraPos) &&
+    cameraPos.length===3 &&
+    cameraPos.every(value=>Number.isFinite(Number(value)))
+  ){
+    distance=new THREE.Vector3().fromArray(cameraPos.map(Number)).distanceTo(focus);
+  }
+
+  if(!(Number.isFinite(distance) && distance>0)){
+    distance=camera.position.distanceTo(controls.target);
+  }
+
+  const vfov=THREE.MathUtils.degToRad(Number(code?.fov ?? camera.fov));
+  const hfov=2*Math.atan(Math.tan(vfov/2)*camera.aspect);
+  const fitTan=Math.max(1e-6, Math.min(Math.tan(vfov/2), Math.tan(hfov/2)));
+
+  return Math.max(1, distance*fitTan);
+}
+
+function fitDistanceForRadius(radius){
+  const vfov=THREE.MathUtils.degToRad(camera.fov);
+  const hfov=2*Math.atan(Math.tan(vfov/2)*camera.aspect);
+  const fitTan=Math.max(1e-6, Math.min(Math.tan(vfov/2), Math.tan(hfov/2)));
+  return radius/fitTan;
+}
+
+function applyResponsiveCamera(code=null){
+  if(!model)return;
+
+  const focus=resolveFocusPoint(code);
+  const direction=resolveViewDirection(code, focus);
+  const radius=resolveFramingRadius(code, focus);
+  const distance=fitDistanceForRadius(radius);
+
+  camera.position.copy(focus.clone().add(direction.multiplyScalar(distance)));
+  controls.target.copy(focus);
   controls.update();
 }
 
@@ -322,8 +433,6 @@ function applyViewportFraming(){
   const yOffset=Math.round((modelVerticalOffset/100)*height);
 
   if(Math.abs(modelHorizontalOffset)>0.0001 || Math.abs(modelVerticalOffset)>0.0001){
-    // Positive horizontal values move the rendered model to the right.
-    // Positive vertical values move the rendered model upward.
     camera.setViewOffset(width,height,-xOffset,yOffset,width,height);
   }else{
     camera.updateProjectionMatrix();
@@ -353,7 +462,7 @@ function updateCameraClipping(code=null){
   // Fit the clipping planes tightly around the model's world-space sphere.
   // This avoids the severe precision loss caused by 0.01 -> 10000.
   const sphere=new THREE.Sphere();
-  new THREE.Box3().setFromObject(model).getBoundingSphere(sphere);
+  getVisualModelBox().getBoundingSphere(sphere);
 
   if(!Number.isFinite(sphere.radius) || sphere.radius<=0){
     camera.near=1;
@@ -380,10 +489,77 @@ function updateCameraClipping(code=null){
   applyViewportFraming();
 }
 
-function currentCode(){return{position:model?model.position.toArray().map(v=>Number(v.toFixed(6))):[0,0,0],rotation:model?[model.rotation.x,model.rotation.y,model.rotation.z].map(v=>Number(v.toFixed(6))):[0,0,0],scale:model?Number(model.scale.x.toFixed(6)):1,modelRotationY:model?Number(THREE.MathUtils.radToDeg(model.rotation.y).toFixed(3)):0,cameraPosition:camera.position.toArray().map(v=>Number(v.toFixed(6))),cameraTarget:controls.target.toArray().map(v=>Number(v.toFixed(6))),fov:Number(camera.fov.toFixed(3)),near:Number(camera.near.toFixed(6)),far:Number(camera.far.toFixed(6)),modelVerticalOffset:Number(modelVerticalOffset.toFixed(3)),modelHorizontalOffset:Number(modelHorizontalOffset.toFixed(3))}}
+function currentCode(){
+  const focus=controls.target.clone();
+  const viewVector=camera.position.clone().sub(focus);
+  const viewDirection=viewVector.lengthSq()>1e-8 ? viewVector.normalize() : new THREE.Vector3(0,0,1);
+  const framingRadius=resolveFramingRadius({
+    cameraPosition: camera.position.toArray(),
+    cameraTarget: focus.toArray(),
+    fov: camera.fov
+  }, focus);
+
+  return{
+    position:model?model.position.toArray().map(v=>Number(v.toFixed(6))):[0,0,0],
+    rotation:model?[model.rotation.x,model.rotation.y,model.rotation.z].map(v=>Number(v.toFixed(6))):[0,0,0],
+    scale:model?Number(model.scale.x.toFixed(6)):1,
+    modelRotationY:model?Number(THREE.MathUtils.radToDeg(model.rotation.y).toFixed(3)):0,
+    focusPoint:focus.toArray().map(v=>Number(v.toFixed(6))),
+    viewDirection:viewDirection.toArray().map(v=>Number(v.toFixed(6))),
+    framingRadius:Number(framingRadius.toFixed(6)),
+    cameraPosition:camera.position.toArray().map(v=>Number(v.toFixed(6))),
+    cameraTarget:focus.toArray().map(v=>Number(v.toFixed(6))),
+    fov:Number(camera.fov.toFixed(3)),
+    near:Number(camera.near.toFixed(6)),
+    far:Number(camera.far.toFixed(6)),
+    modelVerticalOffset:Number(modelVerticalOffset.toFixed(3)),
+    modelHorizontalOffset:Number(modelHorizontalOffset.toFixed(3)),
+    viewportAspect:Number(camera.aspect.toFixed(6))
+  }
+}
 function updateConfig(){if(configOutput)configOutput.value=JSON.stringify(currentCode(),null,2)}
-function applyViewCode(code){if(!model)return;model.position.fromArray(code.position||[0,0,0]);model.rotation.set(...(code.rotation||[0,0,0]));const ry=code.modelRotationY??THREE.MathUtils.radToDeg(model.rotation.y);model.rotation.y=THREE.MathUtils.degToRad(ry);modelRotation.value=String(ry);modelRotationValue.textContent=`${Math.round(ry)} deg`;model.scale.setScalar(code.scale??1);camera.position.fromArray(code.cameraPosition||[0,0,5]);camera.fov=code.fov??35;modelVerticalOffset=Number(code.modelVerticalOffset??0);modelHorizontalOffset=Number(code.modelHorizontalOffset??0);if(cameraFov)cameraFov.value=String(camera.fov);if(cameraFovValue)cameraFovValue.textContent=`${Math.round(camera.fov)} deg`;setOrbitTarget(code);updateCameraClipping(code);applyViewportFraming();updateConfig()}
-function frameModel(){if(!model)return;const box=new THREE.Box3().setFromObject(model),size=box.getSize(new THREE.Vector3()),center=getModelCenter(),max=Math.max(size.x,size.y,size.z),distance=max/(2*Math.tan(THREE.MathUtils.degToRad(camera.fov/2)))*1.35;camera.position.set(center.x,center.y,center.z+distance);controls.target.copy(center);controls.update();updateCameraClipping();updateConfig()}
+function applyViewCode(code){
+  if(!model)return;
+
+  model.position.fromArray(code.position||[0,0,0]);
+  model.rotation.set(...(code.rotation||[0,0,0]));
+
+  const ry=code.modelRotationY??THREE.MathUtils.radToDeg(model.rotation.y);
+  model.rotation.y=THREE.MathUtils.degToRad(ry);
+  modelRotation.value=String(ry);
+  modelRotationValue.textContent=`${Math.round(ry)} deg`;
+
+  model.scale.setScalar(code.scale??1);
+
+  camera.fov=code.fov??35;
+  modelVerticalOffset=Number(code.modelVerticalOffset??0);
+  modelHorizontalOffset=Number(code.modelHorizontalOffset??0);
+
+  if(cameraFov)cameraFov.value=String(camera.fov);
+  if(cameraFovValue)cameraFovValue.textContent=`${Math.round(camera.fov)} deg`;
+
+  applyResponsiveCamera(code);
+  updateCameraClipping(code);
+  applyViewportFraming();
+  updateConfig();
+}
+function frameModel(){
+  if(!model)return;
+
+  const center=getModelCenter();
+  const radius=getModelRadius()*1.08;
+  const live=currentCode();
+
+  applyResponsiveCamera({
+    focusPoint:center.toArray(),
+    viewDirection:live.viewDirection,
+    framingRadius:radius,
+    fov:camera.fov
+  });
+
+  updateCameraClipping();
+  updateConfig();
+}
 async function exportPng(name){
   if(!navigator.mediaDevices?.getDisplayMedia){
     setStatus(tr("screenshotUnsupported"),true);
