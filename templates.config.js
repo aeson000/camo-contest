@@ -85,16 +85,6 @@ dataDirectory: "data/",
     -0.75647
   ],
   "framingRadius": 480.85235,
-  "cameraPosition": [
-    728.323385,
-    442.458941,
-    -976.241818
-  ],
-  "cameraTarget": [
-    0,
-    167.796828,
-    -75.927452
-  ],
   "fov": 44,
   "near": 409.321362,
   "far": 1983.203573,
@@ -142,16 +132,6 @@ dataDirectory: "data/",
     -0.769681
   ],
   "framingRadius": 421.45469,
-  "cameraPosition": [
-    734.015926,
-    364.1553,
-    -991.964656
-  ],
-  "cameraTarget": [
-    0,
-    167.796828,
-    -75.927452
-  ],
   "fov": 39,
   "near": 133.870719,
   "far": 1964.851365,
@@ -199,16 +179,6 @@ dataDirectory: "data/",
     -0.79206
   ],
   "framingRadius": 455.978588,
-  "cameraPosition": [
-    747.155481,
-    330.929326,
-    -1068.213423
-  ],
-  "cameraTarget": [
-    0,
-    167.796828,
-    -75.927452
-  ],
   "fov": 40,
   "near": 224.7977,
   "far": 2017.673075,
@@ -256,21 +226,58 @@ dataDirectory: "data/",
     -0.841346
   ],
   "framingRadius": 455.978588,
-  "cameraPosition": [
-    -631.705088,
-    411.626183,
-    -1129.958239
-  ],
-  "cameraTarget": [
-    0,
-    167.796828,
-    -75.927452
-  ],
   "fov": 40,
   "near": 419.768823,
   "far": 1896.398378,
   "modelVerticalOffset": 16.5,
   "modelHorizontalOffset": -15,
+  "viewportAspect": 1.781302
+}
+    },
+	    {
+      name: "Kpz 70",
+      modelFile: "model_5.fbx",
+      templateFile: "template_all.png",
+
+      body: {
+    baseNormalMap: "KpfPz_70_NM.dx11.png",
+    baseColorMap: "G_KpfPz_70_BC.dx11.png",
+    baseRMMap: "G_KpfPz_70_RM.dx11.png",
+    miscMap: "G_KpfPz_70_MISC.dx11.png",
+    maskMap: "G_KpfPz_70_MASK.dx11.png"
+  },
+
+      defaultTiles: 5,
+
+      viewCode: {
+  "position": [
+    0,
+    0,
+    0
+  ],
+  "rotation": [
+    0,
+    0.122173,
+    0
+  ],
+  "scale": 1,
+  "modelRotationY": 7,
+  "focusPoint": [
+    0,
+    167.796828,
+    -75.927452
+  ],
+  "viewDirection": [
+    -0.570044,
+    0.148783,
+    -0.808031
+  ],
+  "framingRadius": 475.823131,
+  "fov": 50,
+  "near": 357.953334,
+  "far": 1662.542589,
+  "modelVerticalOffset": 22,
+  "modelHorizontalOffset": -16.5,
   "viewportAspect": 1.781302
 }
     }
