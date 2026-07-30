@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>FBX PBR Camouflage Viewer</title>
+<title>Camo Contest 2026</title>
 <style>
 :root{color-scheme:dark;--bg:#111318;--panel:#1a1e26;--panel2:#222834;--line:#343c4a;--text:#eef2f7;--muted:#aeb7c5;--accent:#79a8ff;--danger:#ff6969;--good:#8fd694}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 system-ui,sans-serif}
@@ -27,6 +27,16 @@ textarea{min-height:180px;resize:vertical;font-family:ui-monospace,SFMono-Regula
 .countdown-label{display:block;margin-top:5px;color:var(--muted);font-size:10px;text-transform:uppercase}
 .discord-link{display:block;width:100%;padding:11px 14px;border-radius:9px;background:#5865f2;color:white;text-align:center;text-decoration:none;font-weight:800}
 .discord-link:hover{filter:brightness(1.08)}
+.cubemap-controls{
+  display:grid;
+  gap:.65rem;
+  padding:.9rem;
+  border:1px solid #374151;
+  border-radius:.75rem;
+  background:#151a22;
+}
+.toggle-row{display:flex;align-items:center;gap:.65rem;font-weight:700}
+.toggle-row input{width:auto;margin:0}
 @media(max-width:920px){.layout{grid-template-columns:1fr}}
 </style>
 </head>
@@ -40,6 +50,17 @@ textarea{min-height:180px;resize:vertical;font-family:ui-monospace,SFMono-Regula
 <label class="title" for="templateSelect" data-i18n="template">Template</label>
 <select id="templateSelect"></select>
 </div>
+
+<div class="cubemap-controls">
+  <label class="title" for="cubemapSelect" data-i18n="cubemap">Cubemap</label>
+  <select id="cubemapSelect"></select>
+
+  <label class="toggle-row" for="cubemapEnabled">
+    <input id="cubemapEnabled" type="checkbox">
+    <span data-i18n="enableCubemap">Enable cubemap</span>
+  </label>
+</div>
+
 <div>
 <label class="title" for="camoInput">Square camouflage texture</label>
 <input id="camoInput" type="file" accept="image/png,image/jpeg,image/webp">
@@ -55,7 +76,7 @@ textarea{min-height:180px;resize:vertical;font-family:ui-monospace,SFMono-Regula
 <input id="modelRotation" type="range" min="-180" max="180" value="0" step="1">
 
 
-<button id="resetButton">Reset view</button>
+<button id="resetButton">Reset fixed view</button>
 <button id="downloadButton" disabled data-i18n="downloadPng">Download PNG</button>
 
 <section class="countdown-card" aria-live="polite">
@@ -87,7 +108,7 @@ import { FBXLoader } from "three/addons/loaders/FBXLoader.js";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 
-const { dataDirectory: DATA_DIRECTORY, templates, discordUrl, locale, viewportAspect } = window.FBX_TEMPLATE_CONFIG;
+const { dataDirectory: DATA_DIRECTORY, templates, cubemaps=[], cubemapSettings={}, discordUrl, locale, viewportAspect } = window.FBX_TEMPLATE_CONFIG;
 
 const i18n=locale||{};
 function tr(key,values={}){
@@ -110,6 +131,7 @@ function applyLocalization(){
 applyLocalization();
 
 
+const cubemapSelect=document.getElementById("cubemapSelect"),cubemapEnabledInput=document.getElementById("cubemapEnabled");
 const templateSelect=document.getElementById("templateSelect"),camoInput=document.getElementById("camoInput"),camoPreview=document.getElementById("camoPreview"),anisoStatus=document.getElementById("anisoStatus"),tiles=document.getElementById("tiles"),tilesValue=document.getElementById("tilesValue"),modelRotation=document.getElementById("modelRotation"),modelRotationValue=document.getElementById("modelRotationValue"),resetButton=document.getElementById("resetButton"),downloadButton=document.getElementById("downloadButton"),status=document.getElementById("status"),preview=document.getElementById("preview"),templateBackground=document.getElementById("templateBackground"),rendererHost=document.getElementById("rendererHost");
 
 const cameraFov=null,cameraFovValue=null,frameButton=null,copyConfigButton=null,configOutput=null;
@@ -126,7 +148,23 @@ const anisoWarning=document.getElementById("anisoWarning");
 const scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(35,1,1,5000);camera.position.set(0,0,5);
 const renderer=new THREE.WebGLRenderer({antialias:true,alpha:true,preserveDrawingBuffer:true});renderer.setClearColor(0,0);renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.shadowMap.enabled=true;rendererHost.appendChild(renderer.domElement);
 const controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=false;controls.enabled=false;controls.enableRotate=false;controls.enableZoom=false;controls.enablePan=false;
-const pmrem=new THREE.PMREMGenerator(renderer);scene.environment=pmrem.fromScene(new RoomEnvironment(),.04).texture;
+const pmrem=new THREE.PMREMGenerator(renderer);
+const defaultEnvironmentTarget=pmrem.fromScene(new RoomEnvironment(),.04);
+const defaultEnvironment=defaultEnvironmentTarget.texture;
+scene.environment=defaultEnvironment;
+
+let activeCubeTexture=null;
+let activeCubemapEnvironmentTarget=null;
+let cubemapEnabled=Boolean(cubemapSettings.enabled);
+let activeCubemapId=cubemapSettings.selected||cubemaps[0]?.id||null;
+let cubemapRotation=Array.isArray(cubemapSettings.rotation)
+  ? [
+      Number(cubemapSettings.rotation[0])||0,
+      Number(cubemapSettings.rotation[1])||0,
+      Number(cubemapSettings.rotation[2])||0
+    ]
+  : [0,0,0];
+let cubemapLoadToken=0;
 scene.add(new THREE.HemisphereLight(0xffffff,0x3a4250,1.25));const key=new THREE.DirectionalLight(0xffffff,2.2);key.position.set(5,8,6);scene.add(key);
 
 const textureLoader=new THREE.TextureLoader();
@@ -160,7 +198,178 @@ function updateCountdown(){
 }
 function updateAniso(){const low=maxAnisotropy<QUALITY_THRESHOLD;anisoStatus.textContent=`${tr("anisotropicFiltering")}: ${maxAnisotropy}x`;anisoStatus.classList.toggle("low",low);anisoWarning.style.display=low?"block":"none";if(low)anisoStatus.textContent+=` - ${tr("lowAngledTextureQuality")}`;}
 function p(file){return DATA_DIRECTORY+file}
-function populate(){templateSelect.innerHTML="";templates.forEach((t,i)=>{const o=document.createElement("option");o.value=String(i);o.textContent=t.name;templateSelect.appendChild(o)})}
+function populate(){
+  templateSelect.innerHTML="";
+  templates.forEach((template,index)=>{
+    const option=document.createElement("option");
+    option.value=String(index);
+    option.textContent=template.name;
+    templateSelect.appendChild(option);
+  });
+
+  cubemapSelect.innerHTML="";
+  cubemaps.forEach(cubemap=>{
+    const option=document.createElement("option");
+    option.value=cubemap.id;
+    option.textContent=cubemap.name;
+    cubemapSelect.appendChild(option);
+  });
+
+  const hasCubemaps=cubemaps.length>0;
+  cubemapSelect.disabled=!hasCubemaps;
+  cubemapEnabledInput.disabled=!hasCubemaps;
+
+  if(!hasCubemaps){
+    const option=document.createElement("option");
+    option.value="";
+    option.textContent=tr("noCubemaps");
+    cubemapSelect.appendChild(option);
+  }else{
+    cubemapSelect.value=activeCubemapId||cubemaps[0].id;
+  }
+
+  cubemapEnabledInput.checked=cubemapEnabled;
+}
+function disposeActiveCubemap(){
+  if(activeCubemapEnvironmentTarget){
+    activeCubemapEnvironmentTarget.dispose();
+    activeCubemapEnvironmentTarget=null;
+  }
+
+  if(activeCubeTexture){
+    activeCubeTexture.dispose();
+    activeCubeTexture=null;
+  }
+}
+
+function sliceCubemapCross(image){
+  if(image.width%4!==0 || image.height%3!==0){
+    throw new Error("Cubemap image must use a 4x3 horizontal-cross layout.");
+  }
+
+  const faceWidth=image.width/4;
+  const faceHeight=image.height/3;
+
+  if(faceWidth!==faceHeight){
+    throw new Error("Cubemap faces must be square.");
+  }
+
+  // Three.js CubeTexture order: +X, -X, +Y, -Y, +Z, -Z.
+  const cells=[
+    [2,1],
+    [0,1],
+    [1,0],
+    [1,2],
+    [1,1],
+    [3,1]
+  ];
+
+  return cells.map(([column,row])=>{
+    const canvas=document.createElement("canvas");
+    canvas.width=faceWidth;
+    canvas.height=faceHeight;
+
+    const context=canvas.getContext("2d");
+    context.drawImage(
+      image,
+      column*faceWidth,
+      row*faceHeight,
+      faceWidth,
+      faceHeight,
+      0,
+      0,
+      faceWidth,
+      faceHeight
+    );
+
+    return canvas;
+  });
+}
+
+async function loadCubemapRecord(record){
+  const image=await new Promise((resolve,reject)=>{
+    const element=new Image();
+    element.onload=()=>resolve(element);
+    element.onerror=()=>reject(new Error(`Could not load ${p(record.file)}`));
+    element.src=p(record.file);
+  });
+
+  const texture=new THREE.CubeTexture(sliceCubemapCross(image));
+  texture.colorSpace=THREE.SRGBColorSpace;
+  texture.mapping=THREE.CubeReflectionMapping;
+  texture.generateMipmaps=true;
+  texture.minFilter=THREE.LinearMipmapLinearFilter;
+  texture.magFilter=THREE.LinearFilter;
+  texture.needsUpdate=true;
+
+  return texture;
+}
+
+function applyCubemapRotation(){
+  const x=THREE.MathUtils.degToRad(Number(cubemapRotation[0])||0);
+  const y=THREE.MathUtils.degToRad(Number(cubemapRotation[1])||0);
+  const z=THREE.MathUtils.degToRad(Number(cubemapRotation[2])||0);
+
+  scene.backgroundRotation.set(x,y,z,"XYZ");
+  scene.environmentRotation.set(x,y,z,"XYZ");
+}
+
+function setCubemapVisible(enabled){
+  cubemapEnabled=Boolean(enabled);
+  cubemapEnabledInput.checked=cubemapEnabled;
+  applyCubemapRotation();
+
+  // The cubemap lights and reflects on the tank only.
+  // The page background remains transparent so the template stays visible.
+  scene.background=null;
+  templateBackground.style.visibility="visible";
+
+  if(cubemapEnabled && activeCubeTexture){
+    scene.environment=activeCubemapEnvironmentTarget?.texture||defaultEnvironment;
+  }else{
+    scene.environment=defaultEnvironment;
+  }
+
+  updateConfig();
+}
+
+async function applyCubemapSelection(id,enabled=cubemapEnabled){
+  activeCubemapId=id||cubemaps[0]?.id||null;
+  const record=cubemaps.find(item=>item.id===activeCubemapId);
+
+  if(!record){
+    disposeActiveCubemap();
+    setCubemapVisible(false);
+    setStatus(tr("noCubemaps"),true);
+    return;
+  }
+
+  cubemapSelect.value=record.id;
+  const token=++cubemapLoadToken;
+  setStatus(tr("cubemapLoading"));
+
+  try{
+    const texture=await loadCubemapRecord(record);
+
+    if(token!==cubemapLoadToken){
+      texture.dispose();
+      return;
+    }
+
+    disposeActiveCubemap();
+    activeCubeTexture=texture;
+    activeCubemapEnvironmentTarget=pmrem.fromCubemap(activeCubeTexture);
+    setCubemapVisible(enabled);
+    setStatus(tr("cubemapLoaded",{name:record.name}));
+  }catch(error){
+    console.error(error);
+    if(token!==cubemapLoadToken)return;
+    disposeActiveCubemap();
+    setCubemapVisible(false);
+    setStatus(tr("cubemapLoadError",{name:record.name}),true);
+  }
+}
+
 function resizeRenderer(){
   const aspect=Number(viewportAspect)||16/9;
   const w=Math.max(1,preview.clientWidth);
@@ -541,6 +750,10 @@ function applyViewCode(code){
   applyResponsiveCamera(code);
   updateCameraClipping(code);
   applyViewportFraming();
+
+  applyCubemapRotation();
+  applyCubemapSelection(activeCubemapId,cubemapEnabled);
+
   updateConfig();
 }
 function frameModel(){
@@ -647,6 +860,28 @@ tileRotation.addEventListener("input",()=>{
 tileRotation.addEventListener("change",()=>{rebuild()});
 
 modelRotation.addEventListener("input",()=>{if(!model)return;const d=Number(modelRotation.value);model.rotation.y=THREE.MathUtils.degToRad(d);modelRotationValue.textContent=`${Math.round(d)} deg`;updateCameraClipping();updateConfig()});
+cubemapSelect.addEventListener("change",()=>{
+  applyCubemapSelection(cubemapSelect.value,cubemapEnabledInput.checked);
+});
+
+cubemapEnabledInput.addEventListener("change",()=>{
+  const enabled=cubemapEnabledInput.checked;
+
+  if(enabled && !activeCubeTexture){
+    applyCubemapSelection(cubemapSelect.value||cubemaps[0]?.id,true);
+    return;
+  }
+
+  setCubemapVisible(enabled);
+
+  if(enabled){
+    const name=cubemaps.find(item=>item.id===activeCubemapId)?.name||"";
+    setStatus(tr("cubemapLoaded",{name}));
+  }else{
+    setStatus(tr("cubemapDisabled"));
+  }
+});
+
 templateSelect.addEventListener("change",()=>loadTemplate(Number(templateSelect.value)));
 resetButton.addEventListener("click",()=>applyViewCode(selectedTemplate.viewCode));
 downloadButton.addEventListener("click",()=>exportPng(`${selectedTemplate.name.replace(/\s+/g,"_").toLowerCase()}_viewer.png`));

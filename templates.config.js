@@ -7,6 +7,41 @@ window.FBX_TEMPLATE_CONFIG = {
 dataDirectory: "data/",
 
   discordUrl: "https://discord.gg/wotblitz",
+  
+    // Cubemap PNGs use a 4x3 horizontal-cross layout:
+  //
+  //       +Y
+  //   -X  +Z  +X  -Z
+  //       -Y
+  //
+  cubemaps: [
+    {
+      id: "hangar",
+      name: "Hangar",
+      file: "CM_1.png"
+    },
+	{
+      id: "moon",
+      name: "Moon",
+      file: "CM_2.png"
+    },
+	{
+      id: "mali",
+      name: "Winter Mali",
+      file: "CM_3.png"
+    },
+	{
+      id: "faust",
+      name: "Faust",
+      file: "CM_4.png"
+    }
+  ],
+    cubemapSettings: {
+    enabled: true,
+    selected: "hangar",
+    rotation: [6, 83, 98]
+  },
+
 
   locale: {
     template: "Tank Template",
@@ -38,6 +73,16 @@ dataDirectory: "data/",
     lowAngledTextureQuality: "ERROR: Low angled-texture quality! Please use a higher end device such as a PC.",
     squareTextureError: "Texture MUST be square. Select a square image.",
     camouflageLoaded: "Loaded {file}.",
+	cubemap: "Cubemap",
+    enableCubemap: "Enable cubemap",
+	cubemapRotationX: "Cubemap rotation X",
+    cubemapRotationY: "Cubemap rotation Y",
+    cubemapRotationZ: "Cubemap rotation Z",
+    cubemapDisabled: "Cubemap disabled.",
+    cubemapLoading: "Loading cubemap...",
+    cubemapLoaded: "Loaded cubemap: {name}.",
+    cubemapLoadError: "Could not load cubemap: {name}.",
+    noCubemaps: "No cubemaps configured.",
     loadingModel: "Loading FBX and body PBR maps...",
     templateLoaded: "Loaded {template}.",
     configCopied: "Current config copied.",
@@ -245,6 +290,53 @@ dataDirectory: "data/",
     baseRMMap: "G_KpfPz_70_RM.dx11.png",
     miscMap: "G_KpfPz_70_MISC.dx11.png",
     maskMap: "G_KpfPz_70_MASK.dx11.png"
+  },
+
+      defaultTiles: 5,
+
+      viewCode: {
+  "position": [
+    0,
+    0,
+    0
+  ],
+  "rotation": [
+    0,
+    0.122173,
+    0
+  ],
+  "scale": 1,
+  "modelRotationY": 7,
+  "focusPoint": [
+    0,
+    167.796828,
+    -75.927452
+  ],
+  "viewDirection": [
+    -0.570044,
+    0.148783,
+    -0.808031
+  ],
+  "framingRadius": 475.823131,
+  "fov": 50,
+  "near": 357.953334,
+  "far": 1662.542589,
+  "modelVerticalOffset": 22,
+  "modelHorizontalOffset": -16.5,
+  "viewportAspect": 1.781302
+}
+    },
+	    {
+      name: "VK 90.01 (P)",
+      modelFile: "model_6.fbx",
+      templateFile: "template_all.png",
+
+      body: {
+    baseColorMap: "G_VK_9001P_BC.dx11.png",
+    baseNormalMap: "G_VK_9001P_NM.dx11.png",
+    baseRMMap: "G_VK_9001P_RM.dx11.png",
+    miscMap: "G_VK_9001P_MISC.dx11.png",
+    maskMap: "G_VK_9001P_MASK.dx11.png"
   },
 
       defaultTiles: 5,
