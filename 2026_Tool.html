@@ -37,7 +37,22 @@ textarea{min-height:180px;resize:vertical;font-family:ui-monospace,SFMono-Regula
 }
 .toggle-row{display:flex;align-items:center;gap:.65rem;font-weight:700}
 .toggle-row input{width:auto;margin:0}
-@media(max-width:920px){.layout{grid-template-columns:1fr}}
+.slider-adjust{display:grid;grid-template-columns:2.5rem minmax(0,1fr) 2.5rem;gap:.55rem;align-items:center}
+.precision-button{width:2.5rem;min-width:2.5rem;height:2.5rem;padding:0;display:grid;place-items:center;font-size:1.25rem;line-height:1;border-radius:.55rem}
+
+.viewer-panel{display:grid;gap:14px}
+.viewer-footer{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;align-items:end}
+.viewer-settings-row{display:grid;grid-template-columns:minmax(220px,380px) minmax(220px,380px);gap:14px;align-items:start}
+.viewer-setting-card{padding:.9rem;border:1px solid #374151;border-radius:.75rem;background:#151a22}
+.viewer-status-wrap{display:flex;align-items:end;justify-content:flex-end;min-width:220px}
+.viewer-status-wrap .status{min-height:0;margin:0;padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:var(--panel2);text-align:right;max-width:360px}
+
+.loading-progress{padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:rgba(20,24,32,.92);box-shadow:0 10px 35px rgba(0,0,0,.35)}
+.viewport-loading{position:absolute;left:16px;bottom:16px;z-index:5;width:min(360px,calc(100% - 32px));pointer-events:none;backdrop-filter:blur(5px)}
+.loading-progress-row{display:flex;justify-content:space-between;gap:12px;margin-bottom:8px;color:var(--text);font-weight:700}
+.loading-progress progress{width:100%;height:13px}
+
+@media(max-width:920px){.layout{grid-template-columns:1fr}.viewer-footer{grid-template-columns:1fr}.viewer-settings-row{grid-template-columns:1fr}.viewer-status-wrap{justify-content:stretch}.viewer-status-wrap .status{max-width:none;text-align:left}}
 </style>
 </head>
 <body>
@@ -45,22 +60,6 @@ textarea{min-height:180px;resize:vertical;font-family:ui-monospace,SFMono-Regula
 <h1>Camo Contest 2026</h1><p class="sub">Load your 512*512 texture and select your template. Drag the slider to view different variations. Instructional Video: https://youtu.be/-kb414gQ7CY | Thanks to imakamikaze69 for beta test</p>
 <div class="layout">
 <section class="panel stack">
-
-<div>
-<label class="title" for="templateSelect" data-i18n="template">Template</label>
-<select id="templateSelect"></select>
-</div>
-
-<div class="cubemap-controls">
-  <label class="title" for="cubemapSelect" data-i18n="cubemap">Cubemap</label>
-  <select id="cubemapSelect"></select>
-
-  <label class="toggle-row" for="cubemapEnabled">
-    <input id="cubemapEnabled" type="checkbox">
-    <span data-i18n="enableCubemap">Enable cubemap</span>
-  </label>
-</div>
-
 <div>
 <label class="title" for="camoInput">Square camouflage texture</label>
 <input id="camoInput" type="file" accept="image/png,image/jpeg,image/webp">
@@ -68,12 +67,24 @@ textarea{min-height:180px;resize:vertical;font-family:ui-monospace,SFMono-Regula
 </div>
 <div id="anisoStatus" class="aniso">Anisotropic filtering: checking...</div><div id="anisoWarning" class="warning-banner">Low anisotropic filtering detected. Textures viewed at steep angles may appear blurry. Switch to a device or browser with stronger graphics capabilities for better quality.</div>
 <div class="row"><label for="tiles"><strong data-i18n="tilesPerSide">Tiles per side</strong></label><span id="tilesValue" class="value">5.0 x 5.0</span></div>
-<input id="tiles" type="range" min="1" max="20" value="5" step="0.1">
+<div class="slider-adjust">
+  <button class="precision-button" type="button" data-slider="tiles" data-direction="-1" data-step="0.1" aria-label="Decrease tiles">−</button>
+  <input id="tiles" type="range" min="1" max="20" value="5" step="0.1">
+  <button class="precision-button" type="button" data-slider="tiles" data-direction="1" data-step="0.1" aria-label="Increase tiles">+</button>
+</div>
 
 <div class="row"><label for="tileRotation"><strong data-i18n="tileRotation">Tile rotation</strong></label><span id="tileRotationValue" class="value">0 deg</span></div>
-<input id="tileRotation" type="range" min="-180" max="180" value="0" step="1">
+<div class="slider-adjust">
+  <button class="precision-button" type="button" data-slider="tileRotation" data-direction="-1" data-step="1" aria-label="Decrease tile rotation">−</button>
+  <input id="tileRotation" type="range" min="-180" max="180" value="0" step="1">
+  <button class="precision-button" type="button" data-slider="tileRotation" data-direction="1" data-step="1" aria-label="Increase tile rotation">+</button>
+</div>
 <div class="row"><label for="modelRotation"><strong data-i18n="modelRotation">Model rotation</strong></label><span id="modelRotationValue" class="value">0 deg</span></div>
-<input id="modelRotation" type="range" min="-180" max="180" value="0" step="1">
+<div class="slider-adjust">
+  <button class="precision-button" type="button" data-slider="modelRotation" data-direction="-1" data-step="1" aria-label="Decrease model rotation">−</button>
+  <input id="modelRotation" type="range" min="-180" max="180" value="0" step="1">
+  <button class="precision-button" type="button" data-slider="modelRotation" data-direction="1" data-step="1" aria-label="Increase model rotation">+</button>
+</div>
 
 
 <button id="resetButton">Reset fixed view</button>
@@ -91,24 +102,82 @@ textarea{min-height:180px;resize:vertical;font-family:ui-monospace,SFMono-Regula
 
 <a id="discordLink" class="discord-link" href="#" target="_blank" rel="noopener noreferrer" data-i18n="participateHere">Participate here</a>
 
-<p id="status" class="status" data-i18n="loading">Loading...</p>
+
+
 <p class="note" data-i18n="viewerInstructions"></p>
 </section>
-<section class="panel"><div id="preview" class="preview"><img id="templateBackground" alt="Template" data-i18n-alt="templateAlt"><div id="rendererHost" class="renderer-host"></div><div id="tileWatermark" class="tile-watermark">Tiles: 5.0 × 5.0</div></div></section>
+<section class="panel viewer-panel">
+  <div id="preview" class="preview">
+    <img id="templateBackground" alt="Template" data-i18n-alt="templateAlt">
+    <div id="rendererHost" class="renderer-host"></div>
+    <div id="loadingProgress" class="loading-progress viewport-loading" hidden>
+      <div class="loading-progress-row">
+        <span id="loadingProgressLabel">Loading</span>
+        <span id="loadingProgressValue">0%</span>
+      </div>
+      <progress id="loadingProgressBar" max="100" value="0"></progress>
+    </div>
+    <div id="tileWatermark" class="tile-watermark">Tile 5.0x5.0 | Rotation 0 | Cubemap</div>
+  </div>
+
+  <div class="viewer-footer">
+    <div class="viewer-settings-row">
+      <div class="viewer-setting-card">
+        <label class="title" for="templateSelect" data-i18n="template">Template</label>
+        <select id="templateSelect"></select>
+      </div>
+
+      <div class="viewer-setting-card cubemap-controls">
+        <label class="title" for="cubemapSelect" data-i18n="cubemap">Cubemap</label>
+        <select id="cubemapSelect"></select>
+
+        <label class="toggle-row" for="cubemapEnabled">
+          <input id="cubemapEnabled" type="checkbox">
+          <span data-i18n="enableCubemap">Enable cubemap lighting</span>
+        </label>
+      </div>
+    </div>
+
+    <div class="viewer-status-wrap">
+      <p id="status" class="status" data-i18n="loading">Loading...</p>
+    </div>
+  </div>
+</section>
 </div>
 </main>
+<script src="app.config.js"></script>
+<script src="renderconfig.js"></script>
+<script src="localization.config.js"></script>
+<script src="cubemaps.config.js"></script>
 <script src="templates.config.js"></script>
 <script type="importmap">{"imports":{"three":"https://unpkg.com/three@0.180.0/build/three.module.js","three/addons/":"https://unpkg.com/three@0.180.0/examples/jsm/"}}</script>
 <script type="module">
-if(!window.FBX_TEMPLATE_CONFIG){
-  throw new Error("templates.config.js did not load.");
+if(
+  !window.FBX_APP_CONFIG ||
+  !window.FBX_RENDER_CONFIG ||
+  !window.FBX_LOCALIZATION ||
+  !window.FBX_CUBEMAP_CONFIG ||
+  !window.FBX_TEMPLATES
+){
+  throw new Error("One or more configuration files did not load.");
 }
 import * as THREE from "three";
 import { FBXLoader } from "three/addons/loaders/FBXLoader.js";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 
-const { dataDirectory: DATA_DIRECTORY, templates, cubemaps=[], cubemapSettings={}, discordUrl, locale, viewportAspect } = window.FBX_TEMPLATE_CONFIG;
+const {
+  dataDirectory: DATA_DIRECTORY,
+  discordUrl,
+  viewportAspect
+} = window.FBX_APP_CONFIG;
+const {
+  camouflageSliderUpdateMs = 33
+} = window.FBX_RENDER_CONFIG;
+const templates = window.FBX_TEMPLATES;
+const locale = window.FBX_LOCALIZATION;
+const cubemaps = window.FBX_CUBEMAP_CONFIG.cubemaps || [];
+const cubemapSettings = window.FBX_CUBEMAP_CONFIG.settings || {};
 
 const i18n=locale||{};
 function tr(key,values={}){
@@ -145,6 +214,10 @@ const countdownMinutes=document.getElementById("countdownMinutes");
 const countdownSeconds=document.getElementById("countdownSeconds");
 const countdownGrid=document.getElementById("countdownGrid");
 const anisoWarning=document.getElementById("anisoWarning");
+const loadingProgress=document.getElementById("loadingProgress");
+const loadingProgressLabel=document.getElementById("loadingProgressLabel");
+const loadingProgressValue=document.getElementById("loadingProgressValue");
+const loadingProgressBar=document.getElementById("loadingProgressBar");
 const scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(35,1,1,5000);camera.position.set(0,0,5);
 const renderer=new THREE.WebGLRenderer({antialias:true,alpha:true,preserveDrawingBuffer:true});renderer.setClearColor(0,0);renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.shadowMap.enabled=true;rendererHost.appendChild(renderer.domElement);
 const controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=false;controls.enabled=false;controls.enableRotate=false;controls.enableZoom=false;controls.enablePan=false;
@@ -155,6 +228,7 @@ scene.environment=defaultEnvironment;
 
 let activeCubeTexture=null;
 let activeCubemapEnvironmentTarget=null;
+const cubemapCache=new Map();
 let cubemapEnabled=Boolean(cubemapSettings.enabled);
 let activeCubemapId=cubemapSettings.selected||cubemaps[0]?.id||null;
 let cubemapRotation=Array.isArray(cubemapSettings.rotation)
@@ -170,13 +244,58 @@ scene.add(new THREE.HemisphereLight(0xffffff,0x3a4250,1.25));const key=new THREE
 const textureLoader=new THREE.TextureLoader();
 const fbxLoader=new FBXLoader();
 let selectedTemplate=null,model=null,bodySource=null,bodyProcessed=null,camoBitmap=null,camoPreviewUrl=null,modelVerticalOffset=0,modelHorizontalOffset=0;
+let generatedCamoTexture=null;
+let workerGeneration=0;
+let workerRequestId=0;
+const workerRequests=new Map();
+const camoWorker=new Worker("camo-compositor.worker.js");
+let liveRebuildTimer=null;
+let liveRebuildRunning=false;
+let liveRebuildPending=false;
 const maxAnisotropy=Math.max(1,renderer.capabilities.getMaxAnisotropy());
 const QUALITY_THRESHOLD=4;
 
-function setStatus(message,error=false){status.textContent=message;status.classList.toggle("error",error)}function updateTileWatermark(){
-  if(tileWatermark){
-    tileWatermark.textContent=`${tr("tilesLabel")}: ${Number(tiles.value).toFixed(1)} × ${Number(tiles.value).toFixed(1)} | ${tr("rotationLabel")}: ${Math.round(Number(tileRotation.value))}°`;
+function setStatus(message,error=false){status.textContent=message;status.classList.toggle("error",error)}
+function setLoadProgress(label,percent,visible=true){
+  const value=Math.max(0,Math.min(100,Number(percent)||0));
+  loadingProgress.hidden=!visible;
+  loadingProgressLabel.textContent=label;
+  loadingProgressValue.textContent=`${Math.round(value)}%`;
+  loadingProgressBar.value=value;
+}
+function hideLoadProgress(){
+  loadingProgress.hidden=true;
+}
+function disposeTexture(texture){
+  texture?.dispose?.();
+}
+function disposeBodyResources(){
+  generatedCamoTexture?.dispose?.();
+  generatedCamoTexture=null;
+
+  if(bodyProcessed){
+    if(bodyProcessed.ao && bodyProcessed.ao!==bodySource?.misc)bodyProcessed.ao.dispose();
+    if(bodyProcessed.metalness && bodyProcessed.metalness!==bodySource?.rm)bodyProcessed.metalness.dispose();
+    if(bodyProcessed.roughness && bodyProcessed.roughness!==bodySource?.rm)bodyProcessed.roughness.dispose();
   }
+
+  if(bodySource){
+    Object.values(bodySource).forEach(texture=>texture?.dispose?.());
+  }
+
+  bodyProcessed=null;
+  bodySource=null;
+}
+function updateTileWatermark(){
+  if(!tileWatermark)return;
+
+  const count=Number(tiles.value).toFixed(1);
+  const rotation=Math.round(Number(tileRotation.value));
+  const cubemapName=cubemaps.find(item=>item.id===activeCubemapId)?.name || "";
+
+  tileWatermark.textContent=cubemapName
+    ? `Tile ${count}x${count} | Rotation ${rotation} | ${cubemapName}`
+    : `Tile ${count}x${count} | Rotation ${rotation}`;
 }
 
 const COUNTDOWN_TARGET=new Date(2026,7,13,0,0,0);
@@ -196,7 +315,20 @@ function updateCountdown(){
   countdownSeconds.textContent=String(totalSeconds%60).padStart(2,"0");
   return true;
 }
-function updateAniso(){const low=maxAnisotropy<QUALITY_THRESHOLD;anisoStatus.textContent=`${tr("anisotropicFiltering")}: ${maxAnisotropy}x`;anisoStatus.classList.toggle("low",low);anisoWarning.style.display=low?"block":"none";if(low)anisoStatus.textContent+=` - ${tr("lowAngledTextureQuality")}`;}
+function updateAniso(){
+  const belowTarget=maxAnisotropy<16;
+
+  if(!belowTarget){
+    anisoStatus.style.display="none";
+    anisoWarning.style.display="none";
+    return;
+  }
+
+  anisoStatus.style.display="block";
+  anisoWarning.style.display="block";
+  anisoStatus.classList.add("low");
+  anisoStatus.textContent=`${tr("anisotropicFiltering")}: ${maxAnisotropy}x - ${tr("lowAngledTextureQuality")}`;
+}
 function p(file){return DATA_DIRECTORY+file}
 function populate(){
   templateSelect.innerHTML="";
@@ -231,15 +363,17 @@ function populate(){
   cubemapEnabledInput.checked=cubemapEnabled;
 }
 function disposeActiveCubemap(){
-  if(activeCubemapEnvironmentTarget){
-    activeCubemapEnvironmentTarget.dispose();
-    activeCubemapEnvironmentTarget=null;
-  }
+  activeCubeTexture=null;
+  activeCubemapEnvironmentTarget=null;
+}
 
-  if(activeCubeTexture){
-    activeCubeTexture.dispose();
-    activeCubeTexture=null;
+function disposeCubemapCache(){
+  for(const entry of cubemapCache.values()){
+    entry.environmentTarget?.dispose?.();
+    entry.texture?.dispose?.();
   }
+  cubemapCache.clear();
+  disposeActiveCubemap();
 }
 
 function sliceCubemapCross(image){
@@ -254,47 +388,59 @@ function sliceCubemapCross(image){
     throw new Error("Cubemap faces must be square.");
   }
 
-  // Three.js CubeTexture order: +X, -X, +Y, -Y, +Z, -Z.
-  const cells=[
-    [2,1],
-    [0,1],
-    [1,0],
-    [1,2],
-    [1,1],
-    [3,1]
-  ];
+  const cells=[[2,1],[0,1],[1,0],[1,2],[1,1],[3,1]];
 
   return cells.map(([column,row])=>{
     const canvas=document.createElement("canvas");
     canvas.width=faceWidth;
     canvas.height=faceHeight;
-
-    const context=canvas.getContext("2d");
-    context.drawImage(
+    canvas.getContext("2d").drawImage(
       image,
-      column*faceWidth,
-      row*faceHeight,
-      faceWidth,
-      faceHeight,
-      0,
-      0,
-      faceWidth,
-      faceHeight
+      column*faceWidth,row*faceHeight,faceWidth,faceHeight,
+      0,0,faceWidth,faceHeight
     );
-
     return canvas;
   });
 }
 
+async function fetchBlobWithProgress(url,label){
+  setLoadProgress(label,0,true);
+  const response=await fetch(url);
+  if(!response.ok)throw new Error(`Could not load ${url}`);
+
+  const total=Number(response.headers.get("content-length"))||0;
+  if(!response.body || !total){
+    const blob=await response.blob();
+    setLoadProgress(label,100,true);
+    return blob;
+  }
+
+  const reader=response.body.getReader();
+  const chunks=[];
+  let received=0;
+
+  while(true){
+    const {done,value}=await reader.read();
+    if(done)break;
+    chunks.push(value);
+    received+=value.byteLength;
+    setLoadProgress(label,(received/total)*100,true);
+  }
+
+  return new Blob(chunks);
+}
+
 async function loadCubemapRecord(record){
-  const image=await new Promise((resolve,reject)=>{
-    const element=new Image();
-    element.onload=()=>resolve(element);
-    element.onerror=()=>reject(new Error(`Could not load ${p(record.file)}`));
-    element.src=p(record.file);
-  });
+  if(cubemapCache.has(record.id)){
+    return cubemapCache.get(record.id);
+  }
+
+  const label=`${tr("loadingCubemapProgress")}: ${record.name}`;
+  const blob=await fetchBlobWithProgress(p(record.file),label);
+  const image=await createImageBitmap(blob);
 
   const texture=new THREE.CubeTexture(sliceCubemapCross(image));
+  image.close?.();
   texture.colorSpace=THREE.SRGBColorSpace;
   texture.mapping=THREE.CubeReflectionMapping;
   texture.generateMipmaps=true;
@@ -302,7 +448,11 @@ async function loadCubemapRecord(record){
   texture.magFilter=THREE.LinearFilter;
   texture.needsUpdate=true;
 
-  return texture;
+  const environmentTarget=pmrem.fromCubemap(texture);
+  const entry={texture,environmentTarget};
+  cubemapCache.set(record.id,entry);
+  setLoadProgress(label,100,true);
+  return entry;
 }
 
 function applyCubemapRotation(){
@@ -318,6 +468,7 @@ function setCubemapVisible(enabled){
   cubemapEnabled=Boolean(enabled);
   cubemapEnabledInput.checked=cubemapEnabled;
   applyCubemapRotation();
+  updateTileWatermark();
 
   // The cubemap lights and reflects on the tank only.
   // The page background remains transparent so the template stays visible.
@@ -340,27 +491,28 @@ async function applyCubemapSelection(id,enabled=cubemapEnabled){
   if(!record){
     disposeActiveCubemap();
     setCubemapVisible(false);
+    hideLoadProgress();
     setStatus(tr("noCubemaps"),true);
     return;
   }
 
   cubemapSelect.value=record.id;
+  updateTileWatermark();
   const token=++cubemapLoadToken;
   setStatus(tr("cubemapLoading"));
 
   try{
-    const texture=await loadCubemapRecord(record);
+    const entry=await loadCubemapRecord(record);
 
     if(token!==cubemapLoadToken){
-      texture.dispose();
       return;
     }
 
-    disposeActiveCubemap();
-    activeCubeTexture=texture;
-    activeCubemapEnvironmentTarget=pmrem.fromCubemap(activeCubeTexture);
+    activeCubeTexture=entry.texture;
+    activeCubemapEnvironmentTarget=entry.environmentTarget;
     setCubemapVisible(enabled);
     setStatus(tr("cubemapLoaded",{name:record.name}));
+    setTimeout(hideLoadProgress,300);
   }catch(error){
     console.error(error);
     if(token!==cubemapLoadToken)return;
@@ -388,51 +540,262 @@ function resizeRenderer(){
   }
 }
 function configure(tex,color=false){tex.flipY=false;tex.wrapS=THREE.ClampToEdgeWrapping;tex.wrapT=THREE.ClampToEdgeWrapping;tex.repeat.set(1,1);tex.offset.set(0,0);tex.rotation=0;tex.minFilter=THREE.LinearMipmapLinearFilter;tex.magFilter=THREE.LinearFilter;tex.generateMipmaps=true;tex.anisotropy=maxAnisotropy;tex.colorSpace=color?THREE.SRGBColorSpace:THREE.NoColorSpace;tex.needsUpdate=true;return tex}
-function loadTexture(file,color=false){return new Promise((resolve,reject)=>textureLoader.load(p(file),t=>resolve(configure(t,color)),undefined,()=>reject(new Error(`Could not load ${p(file)}`))))}
-async function loadSet(c,mask){const q=[loadTexture(c.baseColorMap,true),loadTexture(c.baseNormalMap),loadTexture(c.baseRMMap),loadTexture(c.miscMap)];if(mask)q.push(loadTexture(c.maskMap));const a=await Promise.all(q);return{baseColor:a[0],normal:a[1],rm:a[2],misc:a[3],mask:mask?a[4]:null}}
-function pixels(image,w,h){const c=document.createElement("canvas");c.width=w;c.height=h;const x=c.getContext("2d",{willReadFrequently:true});x.drawImage(image,0,0,w,h);return x.getImageData(0,0,w,h)}
-function fromData(d,color=false){const c=document.createElement("canvas");c.width=d.width;c.height=d.height;c.getContext("2d").putImageData(d,0,0);return configure(new THREE.CanvasTexture(c),color)}
-function aoMap(src){const im=src.image,d=pixels(im,im.width,im.height),o=new ImageData(im.width,im.height);for(let i=0;i<d.data.length;i+=4){const v=d.data[i+3];o.data[i]=v;o.data[i+1]=v;o.data[i+2]=v;o.data[i+3]=255}return fromData(o)}
-function metalMap(src){const im=src.image,d=pixels(im,im.width,im.height),o=new ImageData(im.width,im.height);for(let i=0;i<d.data.length;i+=4){o.data[i]=0;o.data[i+1]=0;o.data[i+2]=d.data[i+1];o.data[i+3]=255}return fromData(o)}
-function roughMap(src){const im=src.image,d=pixels(im,im.width,im.height),o=new ImageData(im.width,im.height);for(let i=0;i<d.data.length;i+=4){o.data[i]=0;o.data[i+1]=d.data[i+3];o.data[i+2]=0;o.data[i+3]=255}return fromData(o)}
-function bodyColor(){if(!camoBitmap)return bodySource.baseColor;const b=bodySource.baseColor.image,m=bodySource.mask.image,w=b.width,h=b.height,bd=pixels(b,w,h),md=pixels(m,w,h);
+function loadTexture(file,color=false,onProgress=()=>{}){
+  return new Promise((resolve,reject)=>{
+    textureLoader.load(
+      p(file),
+      texture=>resolve(configure(texture,color)),
+      event=>{
+        if(event.total)onProgress(event.loaded/event.total);
+      },
+      ()=>reject(new Error(`Could not load ${p(file)}`))
+    );
+  });
+}
+async function loadSet(config,mask){
+  const entries=[
+    [config.baseColorMap,true],
+    [config.baseNormalMap,false],
+    [config.baseRMMap,false],
+    [config.miscMap,false]
+  ];
+  if(mask)entries.push([config.maskMap,false]);
 
-// Build one continuous tiled sheet first.
-const repeat=Number(tiles.value);
-const tileW=w/repeat;
-const tileH=h/repeat;
+  const fractions=new Array(entries.length).fill(0);
+  const update=index=>fraction=>{
+    fractions[index]=fraction;
+    const average=fractions.reduce((sum,value)=>sum+value,0)/fractions.length;
+    setLoadProgress(tr("loadingPbr"),average*100,true);
+  };
 
-// Use an oversized sheet so rotating the complete tile field does not leave empty corners.
-const diagonal=Math.ceil(Math.sqrt(w*w+h*h));
-const sheet=document.createElement("canvas");
-sheet.width=diagonal;
-sheet.height=diagonal;
-const sheetCtx=sheet.getContext("2d",{willReadFrequently:true});
+  const loaded=await Promise.all(entries.map(([file,color],index)=>
+    loadTexture(file,color,update(index)).then(texture=>{
+      fractions[index]=1;
+      update(index)(1);
+      return texture;
+    })
+  ));
 
-const startX=-(diagonal%tileW)-tileW;
-const startY=-(diagonal%tileH)-tileH;
-
-for(let y=startY;y<diagonal+tileH;y+=tileH){
-  for(let x=startX;x<diagonal+tileW;x+=tileW){
-    sheetCtx.drawImage(camoBitmap,x,y,tileW,tileH);
+  return{
+    baseColor:loaded[0],
+    normal:loaded[1],
+    rm:loaded[2],
+    misc:loaded[3],
+    mask:mask?loaded[4]:null
+  };
+}
+function loadFbx(file){
+  return new Promise((resolve,reject)=>{
+    fbxLoader.load(
+      p(file),
+      resolve,
+      event=>{
+        const percent=event.total ? (event.loaded/event.total)*100 : 0;
+        setLoadProgress(tr("loadingFbx"),percent,true);
+      },
+      reject
+    );
+  });
+}
+function pixels(image,w,h){
+  const canvas=document.createElement("canvas");
+  canvas.width=w;
+  canvas.height=h;
+  const context=canvas.getContext("2d",{willReadFrequently:true});
+  context.drawImage(image,0,0,w,h);
+  return context.getImageData(0,0,w,h);
+}
+function fromData(data,color=false){
+  const canvas=document.createElement("canvas");
+  canvas.width=data.width;
+  canvas.height=data.height;
+  canvas.getContext("2d").putImageData(data,0,0);
+  return configure(new THREE.CanvasTexture(canvas),color);
+}
+function aoMap(source){
+  const image=source.image;
+  const data=pixels(image,image.width,image.height);
+  const output=new ImageData(image.width,image.height);
+  for(let index=0;index<data.data.length;index+=4){
+    const value=data.data[index+3];
+    output.data[index]=value;
+    output.data[index+1]=value;
+    output.data[index+2]=value;
+    output.data[index+3]=255;
   }
+  return fromData(output);
+}
+function metalMap(source){
+  const image=source.image;
+  const data=pixels(image,image.width,image.height);
+  const output=new ImageData(image.width,image.height);
+  for(let index=0;index<data.data.length;index+=4){
+    output.data[index]=0;
+    output.data[index+1]=0;
+    output.data[index+2]=data.data[index+1];
+    output.data[index+3]=255;
+  }
+  return fromData(output);
+}
+function roughMap(source){
+  const image=source.image;
+  const data=pixels(image,image.width,image.height);
+  const output=new ImageData(image.width,image.height);
+  for(let index=0;index<data.data.length;index+=4){
+    output.data[index]=0;
+    output.data[index+1]=data.data[index+3];
+    output.data[index+2]=0;
+    output.data[index+3]=255;
+  }
+  return fromData(output);
+}
+function buildStaticProcessed(){
+  setLoadProgress(tr("processingPbr"),0,true);
+  bodyProcessed={
+    baseColor:bodySource.baseColor,
+    normal:bodySource.normal,
+    ao:aoMap(bodySource.misc),
+    metalness:metalMap(bodySource.rm),
+    roughness:roughMap(bodySource.rm)
+  };
+  setLoadProgress(tr("processingPbr"),100,true);
+}
+function initializeCamoWorker(){
+  const generation=++workerGeneration;
+
+  return Promise.all([
+    createImageBitmap(bodySource.baseColor.image),
+    createImageBitmap(bodySource.mask.image)
+  ]).then(([base,mask])=>new Promise((resolve,reject)=>{
+    const handler=event=>{
+      const message=event.data;
+      if(message.generation!==generation)return;
+      if(message.type==="ready"){
+        camoWorker.removeEventListener("message",handler);
+        resolve();
+      }else if(message.type==="error"){
+        camoWorker.removeEventListener("message",handler);
+        reject(new Error(message.message));
+      }
+    };
+
+    camoWorker.addEventListener("message",handler);
+    camoWorker.postMessage({
+      type:"init",
+      generation,
+      width:bodySource.baseColor.image.width,
+      height:bodySource.baseColor.image.height,
+      base,
+      mask
+    },[base,mask]);
+  }));
+}
+camoWorker.addEventListener("message",event=>{
+  const message=event.data;
+  if(message.type!=="result" && message.type!=="error")return;
+  const pending=workerRequests.get(message.requestId);
+  if(!pending)return;
+  workerRequests.delete(message.requestId);
+
+  if(message.type==="error"){
+    pending.reject(new Error(message.message));
+  }else{
+    pending.resolve(message.bitmap);
+  }
+});
+function composeCamoInWorker(){
+  if(!camoBitmap)return Promise.resolve(null);
+  const requestId=++workerRequestId;
+  const generation=workerGeneration;
+
+  return createImageBitmap(camoBitmap).then(camoCopy=>new Promise((resolve,reject)=>{
+    workerRequests.set(requestId,{resolve,reject});
+    camoWorker.postMessage({
+      type:"compose",
+      requestId,
+      generation,
+      repeat:Number(tiles.value),
+      rotation:Number(tileRotation.value),
+      camo:camoCopy
+    },[camoCopy]);
+  }));
+}
+function textureFromBitmap(bitmap){
+  const texture=configure(new THREE.CanvasTexture(bitmap),true);
+  texture.image=bitmap;
+  texture.needsUpdate=true;
+  return texture;
+}
+function updateGeneratedBaseColor(texture){
+  generatedCamoTexture?.dispose?.();
+  generatedCamoTexture=texture;
+  bodyProcessed.baseColor=texture||bodySource.baseColor;
+
+  if(!model)return;
+  model.traverse(mesh=>{
+    if(!mesh.isMesh || !mesh.userData.generated || !mesh.userData.original)return;
+    mesh.userData.generated.forEach((material,index)=>{
+      const original=mesh.userData.original[index];
+      if(isTrack(mesh,original))return;
+      material.map?.dispose?.();
+      material.map=cloneMap(bodyProcessed.baseColor,original?.map||null);
+      material.needsUpdate=true;
+    });
+  });
+}
+async function rebuild(){
+  if(!bodySource || !bodyProcessed)return;
+  if(!camoBitmap){
+    updateGeneratedBaseColor(null);
+    return;
+  }
+
+  setLoadProgress(tr("processingCamo"),0,true);
+  const bitmap=await composeCamoInWorker();
+
+  if(bitmap){
+    updateGeneratedBaseColor(textureFromBitmap(bitmap));
+  }
+
+  setLoadProgress(tr("processingCamo"),100,true);
+  setTimeout(hideLoadProgress,250);
 }
 
-// Rotate the already-stitched sheet as one image, then crop its center to the atlas size.
-const c=document.createElement("canvas");
-c.width=w;
-c.height=h;
-const x=c.getContext("2d",{willReadFrequently:true});
-const angle=THREE.MathUtils.degToRad(Number(tileRotation.value));
+function scheduleLiveCamoRebuild(immediate=false){
+  liveRebuildPending=true;
 
-x.save();
-x.translate(w/2,h/2);
-x.rotate(angle);
-x.drawImage(sheet,-diagonal/2,-diagonal/2);
-x.restore();
+  if(liveRebuildRunning)return;
 
-const cd=x.getImageData(0,0,w,h),o=new ImageData(w,h);for(let i=0;i<bd.data.length;i+=4){const a=md.data[i+3]/255;o.data[i]=Math.round(bd.data[i]*(1-a)+cd.data[i]*a);o.data[i+1]=Math.round(bd.data[i+1]*(1-a)+cd.data[i+1]*a);o.data[i+2]=Math.round(bd.data[i+2]*(1-a)+cd.data[i+2]*a);o.data[i+3]=bd.data[i+3]}return fromData(o,true)}
-function buildProcessed(){bodyProcessed={baseColor:bodyColor(),normal:bodySource.normal,ao:aoMap(bodySource.misc),metalness:metalMap(bodySource.rm),roughness:roughMap(bodySource.rm)}}
+  if(liveRebuildTimer!==null){
+    if(!immediate)return;
+    clearTimeout(liveRebuildTimer);
+    liveRebuildTimer=null;
+  }
+
+  const delay=immediate ? 0 : Math.max(0,Number(camouflageSliderUpdateMs)||33);
+
+  liveRebuildTimer=setTimeout(async()=>{
+    liveRebuildTimer=null;
+
+    if(liveRebuildRunning || !liveRebuildPending)return;
+
+    liveRebuildPending=false;
+    liveRebuildRunning=true;
+
+    try{
+      await rebuild();
+    }catch(error){
+      console.error(error);
+      setStatus(error.message,true);
+    }finally{
+      liveRebuildRunning=false;
+
+      if(liveRebuildPending){
+        scheduleLiveCamoRebuild(false);
+      }
+    }
+  },delay);
+}
 function isTrack(mesh,mat){return(mesh.name||"").toLowerCase().includes("_track")||(mat?.name||"").toLowerCase().includes("_track")}
 function copyTransform(target,source){if(!source)return target;target.channel=source.channel??target.channel;target.offset.copy(source.offset);target.repeat.copy(source.repeat);target.center.copy(source.center);target.rotation=source.rotation;target.matrixAutoUpdate=source.matrixAutoUpdate;if(!source.matrixAutoUpdate)target.matrix.copy(source.matrix);target.needsUpdate=true;return target}
 function cloneMap(src,originalMap){const t=src.clone();t.image=src.image;t.wrapS=THREE.ClampToEdgeWrapping;t.wrapT=THREE.ClampToEdgeWrapping;t.minFilter=THREE.LinearMipmapLinearFilter;t.magFilter=THREE.LinearFilter;t.generateMipmaps=true;t.anisotropy=maxAnisotropy;copyTransform(t,originalMap);t.needsUpdate=true;return t}
@@ -482,10 +845,84 @@ function materialFor(mesh,original){
 }
 function disposeGenerated(){if(!model)return;model.traverse(ch=>{if(!ch.isMesh||!ch.userData.generated)return;ch.userData.generated.forEach(m=>{m.map?.dispose();m.normalMap?.dispose();m.aoMap?.dispose();m.metalnessMap?.dispose();m.roughnessMap?.dispose();m.dispose()});ch.userData.generated=null})}
 function applyMaterials(){if(!model||!bodyProcessed)return;disposeGenerated();model.traverse(ch=>{if(!ch.isMesh)return;if(!ch.userData.original){ch.userData.wasArray=Array.isArray(ch.material);ch.userData.original=ch.userData.wasArray?ch.material.slice():[ch.material]}const made=ch.userData.original.map(o=>materialFor(ch,o));ch.userData.generated=made;ch.material=ch.userData.wasArray?made:made[0];ch.castShadow=true;ch.receiveShadow=true})}
-function rebuild(){if(!bodySource)return;buildProcessed();applyMaterials()}
-function disposeModel(o){if(!o)return;disposeGenerated();o.traverse(ch=>ch.geometry?.dispose?.());scene.remove(o)}
-async function uploadCamo(file){if(!file)return;const b=await createImageBitmap(file);if(b.width!==b.height){b.close();setStatus(tr("squareTextureError",{width:b.width,height:b.height}),true);return}camoBitmap?.close?.();camoBitmap=b;if(camoPreviewUrl)URL.revokeObjectURL(camoPreviewUrl);camoPreviewUrl=URL.createObjectURL(file);camoPreview.src=camoPreviewUrl;camoPreview.style.display="block";rebuild();setStatus(tr("camouflageLoaded",{file:file.name}))}
-async function loadTemplate(i){selectedTemplate=templates[i];tiles.value=String(selectedTemplate.defaultTiles??1);tilesValue.textContent=`${Number(tiles.value).toFixed(1)} x ${Number(tiles.value).toFixed(1)}`;templateBackground.src=p(selectedTemplate.templateFile);setStatus(tr("loadingModel"));try{const [mdl,b]=await Promise.all([fbxLoader.loadAsync(p(selectedTemplate.modelFile)),loadSet(selectedTemplate.body,true)]);disposeModel(model);model=mdl;bodySource=b;scene.add(model);buildProcessed();applyMaterials();applyViewCode(selectedTemplate.viewCode);downloadButton.disabled=false;setStatus(tr("templateLoaded",{template:selectedTemplate.name}))}catch(e){console.error(e);setStatus(e.message,true)}}
+function disposeModel(object){
+  if(!object)return;
+  disposeGenerated();
+  object.traverse(child=>child.geometry?.dispose?.());
+  scene.remove(object);
+}
+async function uploadCamo(file){
+  if(!file)return;
+  const bitmap=await createImageBitmap(file);
+
+  if(bitmap.width!==bitmap.height){
+    bitmap.close();
+    setStatus(tr("squareTextureError",{width:bitmap.width,height:bitmap.height}),true);
+    return;
+  }
+
+  camoBitmap?.close?.();
+  camoBitmap=bitmap;
+
+  if(camoPreviewUrl)URL.revokeObjectURL(camoPreviewUrl);
+  camoPreviewUrl=URL.createObjectURL(file);
+  camoPreview.src=camoPreviewUrl;
+  camoPreview.style.display="block";
+
+  await rebuild();
+  setStatus(tr("camouflageLoaded",{file:file.name}));
+
+  const layout=document.querySelector(".layout");
+  if(layout){
+    requestAnimationFrame(()=>{
+      layout.scrollIntoView({
+        behavior:"smooth",
+        block:"start"
+      });
+    });
+  }
+}
+async function loadTemplate(index){
+  selectedTemplate=templates[index];
+  tiles.value=String(selectedTemplate.defaultTiles??1);
+  tilesValue.textContent=`${Number(tiles.value).toFixed(1)} x ${Number(tiles.value).toFixed(1)}`;
+  templateBackground.src=p(selectedTemplate.templateFile);
+  setStatus(tr("loadingModel"));
+
+  try{
+    setLoadProgress(tr("loadingFbx"),0,true);
+    const loadedModel=await loadFbx(selectedTemplate.modelFile);
+    setLoadProgress(tr("loadingFbx"),100,true);
+
+    setLoadProgress(tr("loadingPbr"),0,true);
+    const loadedBody=await loadSet(selectedTemplate.body,true);
+    setLoadProgress(tr("loadingPbr"),100,true);
+
+    disposeModel(model);
+    disposeBodyResources();
+
+    model=loadedModel;
+    bodySource=loadedBody;
+    scene.add(model);
+
+    buildStaticProcessed();
+    await initializeCamoWorker();
+    applyMaterials();
+
+    if(camoBitmap){
+      await rebuild();
+    }
+
+    applyViewCode(selectedTemplate.viewCode);
+    downloadButton.disabled=false;
+    setStatus(tr("templateLoaded",{template:selectedTemplate.name}));
+    setTimeout(hideLoadProgress,350);
+  }catch(error){
+    console.error(error);
+    hideLoadProgress();
+    setStatus(error.message,true);
+  }
+}
 
 function getVisualModelBox(){
   const box=new THREE.Box3();
@@ -850,14 +1287,40 @@ async function exportPng(name){
   }
 }
 
+document.querySelectorAll(".precision-button").forEach(button=>{
+  button.addEventListener("click",()=>{
+    const slider=document.getElementById(button.dataset.slider);
+    if(!slider)return;
+
+    const direction=Number(button.dataset.direction)||0;
+    const increment=Number(button.dataset.step)||Number(slider.step)||1;
+    const minimum=Number(slider.min);
+    const maximum=Number(slider.max);
+    const decimals=increment<1 ? (String(increment).split(".")[1]||"").length : 0;
+
+    let next=Number(slider.value)+(direction*increment);
+    next=Math.min(maximum,Math.max(minimum,next));
+    slider.value=next.toFixed(decimals);
+
+    slider.dispatchEvent(new Event("input",{bubbles:true}));
+    slider.dispatchEvent(new Event("change",{bubbles:true}));
+  });
+});
+
 camoInput.addEventListener("change",()=>uploadCamo(camoInput.files[0]));
-tiles.addEventListener("input",()=>{tilesValue.textContent=`${Number(tiles.value).toFixed(1)} x ${Number(tiles.value).toFixed(1)}`;updateTileWatermark()});
-tiles.addEventListener("change",()=>{rebuild()});
+tiles.addEventListener("input",()=>{
+  tilesValue.textContent=`${Number(tiles.value).toFixed(1)} x ${Number(tiles.value).toFixed(1)}`;
+  updateTileWatermark();
+  scheduleLiveCamoRebuild(false);
+});
+tiles.addEventListener("change",()=>scheduleLiveCamoRebuild(true));
+
 tileRotation.addEventListener("input",()=>{
   tileRotationValue.textContent=`${Math.round(Number(tileRotation.value))} deg`;
   updateTileWatermark();
+  scheduleLiveCamoRebuild(false);
 });
-tileRotation.addEventListener("change",()=>{rebuild()});
+tileRotation.addEventListener("change",()=>scheduleLiveCamoRebuild(true));
 
 modelRotation.addEventListener("input",()=>{if(!model)return;const d=Number(modelRotation.value);model.rotation.y=THREE.MathUtils.degToRad(d);modelRotationValue.textContent=`${Math.round(d)} deg`;updateCameraClipping();updateConfig()});
 cubemapSelect.addEventListener("change",()=>{
@@ -887,6 +1350,30 @@ resetButton.addEventListener("click",()=>applyViewCode(selectedTemplate.viewCode
 downloadButton.addEventListener("click",()=>exportPng(`${selectedTemplate.name.replace(/\s+/g,"_").toLowerCase()}_viewer.png`));
 
 templateBackground.addEventListener("load",resizeRenderer);window.addEventListener("resize",resizeRenderer);
+
+window.addEventListener("beforeunload",()=>{
+  if(liveRebuildTimer!==null)clearTimeout(liveRebuildTimer);
+  liveRebuildTimer=null;
+  liveRebuildPending=false;
+  camoWorker.terminate();
+  workerRequests.clear();
+
+  camoBitmap?.close?.();
+  camoBitmap=null;
+
+  if(camoPreviewUrl){
+    URL.revokeObjectURL(camoPreviewUrl);
+    camoPreviewUrl=null;
+  }
+
+  disposeModel(model);
+  disposeBodyResources();
+  disposeCubemapCache();
+  defaultEnvironmentTarget.dispose();
+  pmrem.dispose();
+  renderer.dispose();
+});
+
 updateAniso();
 updateTileWatermark();
 updateCountdown();

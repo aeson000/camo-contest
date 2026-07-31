@@ -1,96 +1,4 @@
-// Template configuration shared by the editor and viewer.
-//
-// Add or remove template records here.
-// Paths are relative to the HTML files.
-
-window.FBX_TEMPLATE_CONFIG = {
-dataDirectory: "data/",
-
-  discordUrl: "https://discord.gg/wotblitz",
-  
-    // Cubemap PNGs use a 4x3 horizontal-cross layout:
-  //
-  //       +Y
-  //   -X  +Z  +X  -Z
-  //       -Y
-  //
-  cubemaps: [
-    {
-      id: "hangar",
-      name: "Hangar",
-      file: "CM_1.png"
-    },
-	{
-      id: "moon",
-      name: "Moon",
-      file: "CM_2.png"
-    },
-	{
-      id: "mali",
-      name: "Winter Mali",
-      file: "CM_3.png"
-    },
-	{
-      id: "faust",
-      name: "Faust",
-      file: "CM_4.png"
-    }
-  ],
-    cubemapSettings: {
-    enabled: true,
-    selected: "hangar",
-    rotation: [6, 83, 98]
-  },
-
-
-  locale: {
-    template: "Tank Template",
-    uploadCamouflage: "Upload camouflage",
-    tilesPerSide: "Camo Tile Density",
-    tileRotation: "Camo Tile rotation",
-    modelRotation: "Tank rotation",
-    modelVerticalPosition: "Model vertical position",
-    modelHorizontalPosition: "Model horizontal position",
-    cameraFov: "Camera FOV",
-    resetView: "Reset view",
-    frameModel: "Frame model",
-    copyCurrentConfig: "Copy current config",
-    downloadPng: "Download Screen Capture",
-    countdownTitle: "Countdown to August 13, 2026",
-    days: "Days",
-    hours: "Hours",
-    minutes: "Minutes",
-    seconds: "Seconds",
-    participateHere: "Join the Camo Contest!",
-    loading: "Loading...",
-    editorInstructions: "",
-    viewerInstructions: "Load your 512*512 texture and select your template. Drag the slider to view different variations. Instructional Video: https://youtu.be/-kb414gQ7CY | Thanks to imakamikaze69 for beta test",
-    templateAlt: "Template",
-    tilesLabel: "Tiles",
-    rotationLabel: "Rotation",
-    countdownFinished: "August 13 has arrived",
-    anisotropicFiltering: "Anisotropic filtering",
-    lowAngledTextureQuality: "ERROR: Low angled-texture quality! Please use a higher end device such as a PC.",
-    squareTextureError: "Texture MUST be square. Select a square image.",
-    camouflageLoaded: "Loaded {file}.",
-	cubemap: "Cubemap",
-    enableCubemap: "Enable cubemap",
-	cubemapRotationX: "Cubemap rotation X",
-    cubemapRotationY: "Cubemap rotation Y",
-    cubemapRotationZ: "Cubemap rotation Z",
-    cubemapDisabled: "Cubemap disabled.",
-    cubemapLoading: "Loading cubemap...",
-    cubemapLoaded: "Loaded cubemap: {name}.",
-    cubemapLoadError: "Could not load cubemap: {name}.",
-    noCubemaps: "No cubemaps configured.",
-    loadingModel: "Loading FBX and body PBR maps...",
-    templateLoaded: "Loaded {template}.",
-    configCopied: "Current config copied.",
-    configMissing: "Configuration failed to load."
-  },
-  
-
-  templates: [
+window.FBX_TEMPLATES = [
     {
       name: "E-100",
       modelFile: "model_1.fbx",
@@ -114,28 +22,38 @@ dataDirectory: "data/",
   ],
   "rotation": [
     0,
-    0.122173,
+    0.017453,
     0
   ],
   "scale": 1,
-  "modelRotationY": 7,
+  "modelRotationY": 1,
   "focusPoint": [
-    0,
-    167.796828,
-    -75.927452
+    318.748482,
+    -21.075182,
+    124.309581
   ],
   "viewDirection": [
     0.611959,
     0.230779,
     -0.75647
   ],
-  "framingRadius": 480.85235,
-  "fov": 44,
-  "near": 409.321362,
-  "far": 1983.203573,
-  "modelVerticalOffset": 20,
-  "modelHorizontalOffset": -18.5,
-  "viewportAspect": 1.781302
+  "framingRadius": 496.259868,
+  "cameraPosition": [
+    1125.755633,
+    283.259427,
+    -873.268197
+  ],
+  "cameraTarget": [
+    318.748482,
+    -21.075182,
+    124.309581
+  ],
+  "fov": 38,
+  "near": 607.583894,
+  "far": 2086.742729,
+  "modelVerticalOffset": 2,
+  "modelHorizontalOffset": -36,
+  "viewportAspect": 1.777778
 }
     },
 	    {
@@ -374,5 +292,4 @@ dataDirectory: "data/",
 }
     }
 	
-  ]
-};
+  ];
