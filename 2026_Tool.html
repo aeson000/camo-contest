@@ -298,7 +298,7 @@ function updateTileWatermark(){
     : `Tile ${count}x${count} | Rotation ${rotation}`;
 }
 
-const COUNTDOWN_TARGET=new Date(2026,7,13,0,0,0);
+const COUNTDOWN_TARGET=new Date("2026-08-13T13:00:00+02:00");
 
 function updateCountdown(){
   const remaining=COUNTDOWN_TARGET.getTime()-Date.now();
@@ -1210,57 +1210,77 @@ function frameModel(){
   updateCameraClipping();
   updateConfig();
 }
+function drawRoundedRect(context,x,y,width,height,radius){
+  const clamped=Math.min(radius,width/2,height/2);
+  context.beginPath();
+  context.moveTo(x+clamped,y);
+  context.arcTo(x+width,y,x+width,y+height,clamped);
+  context.arcTo(x+width,y+height,x,y+height,clamped);
+  context.arcTo(x,y+height,x,y,clamped);
+  context.arcTo(x,y,x+width,y,clamped);
+  context.closePath();
+}
+
 async function exportPng(name){
-  if(!navigator.mediaDevices?.getDisplayMedia){
-    setStatus(tr("screenshotUnsupported"),true);
-    return;
-  }
-
-  setStatus(tr("screenshotPrompt"));
-
-  let stream;
-
   try{
-    stream=await navigator.mediaDevices.getDisplayMedia({
-      video:{
-        displaySurface:"browser"
-      },
-      audio:false,
-      preferCurrentTab:true,
-      selfBrowserSurface:"include",
-      surfaceSwitching:"exclude"
-    });
+    const viewportWidth=Math.max(1,Math.round(preview.clientWidth));
+    const viewportHeight=Math.max(1,Math.round(preview.clientHeight));
+    const hasTexture=Boolean(camoPreview?.src && camoPreview.style.display!=="none");
+    const margin=16;
+    const textureSize=hasTexture
+      ? Math.max(160,Math.min(Math.round(viewportWidth*0.32),360))
+      : 0;
+    const outputHeight=viewportHeight+(hasTexture?margin+textureSize:0);
 
-    const video=document.createElement("video");
-    video.srcObject=stream;
-    video.muted=true;
-    video.playsInline=true;
+    const output=document.createElement("canvas");
+    output.width=viewportWidth;
+    output.height=outputHeight;
 
-    await new Promise((resolve,reject)=>{
-      video.addEventListener("loadedmetadata",resolve,{once:true});
-      video.addEventListener("error",reject,{once:true});
-    });
+    const context=output.getContext("2d");
+    context.fillStyle="#000";
+    context.fillRect(0,0,output.width,output.height);
 
-    await video.play();
+    if(templateBackground?.complete && templateBackground.naturalWidth>0){
+      context.drawImage(templateBackground,0,0,viewportWidth,viewportHeight);
+    }
 
-    // Wait for a rendered capture frame.
-    await new Promise(resolve=>{
-      if("requestVideoFrameCallback" in video){
-        video.requestVideoFrameCallback(()=>resolve());
-      }else{
-        requestAnimationFrame(()=>requestAnimationFrame(resolve));
-      }
-    });
+    if(renderer?.domElement){
+      context.drawImage(renderer.domElement,0,0,viewportWidth,viewportHeight);
+    }
 
-    const out=document.createElement("canvas");
-    out.width=Math.max(1,video.videoWidth);
-    out.height=Math.max(1,video.videoHeight);
+    const watermarkText=(tileWatermark?.textContent||"").trim();
+    if(watermarkText){
+      context.font='700 16px system-ui, -apple-system, "Segoe UI", sans-serif';
+      const paddingX=12;
+      const boxHeight=34;
+      const textWidth=Math.ceil(context.measureText(watermarkText).width);
+      const boxWidth=textWidth+(paddingX*2);
+      const x=viewportWidth-boxWidth-12;
+      const y=12;
 
-    const context=out.getContext("2d");
-    context.drawImage(video,0,0,out.width,out.height);
+      context.save();
+      context.fillStyle="rgba(0,0,0,0.62)";
+      drawRoundedRect(context,x,y,boxWidth,boxHeight,8);
+      context.fill();
+      context.fillStyle="#fff";
+      context.textBaseline="middle";
+      context.fillText(watermarkText,x+paddingX,y+(boxHeight/2));
+      context.restore();
+    }
+
+    if(hasTexture){
+      context.imageSmoothingEnabled=false;
+      context.drawImage(
+        camoPreview,
+        0,
+        viewportHeight+margin,
+        textureSize,
+        textureSize
+      );
+    }
 
     const blob=await new Promise((resolve,reject)=>{
-      out.toBlob(result=>{
+      output.toBlob(result=>{
         if(result)resolve(result);
         else reject(new Error("PNG encoding failed."));
       },"image/png");
@@ -1276,14 +1296,7 @@ async function exportPng(name){
     setStatus(tr("screenshotSaved"));
   }catch(error){
     console.error(error);
-
-    if(error?.name==="NotAllowedError" || error?.name==="AbortError"){
-      setStatus(tr("screenshotCancelled"),true);
-    }else{
-      setStatus(error?.message||tr("screenshotCancelled"),true);
-    }
-  }finally{
-    stream?.getTracks().forEach(track=>track.stop());
+    setStatus(error?.message||tr("screenshotCancelled"),true);
   }
 }
 
