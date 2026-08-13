@@ -22,7 +22,7 @@
   <meta name="twitter:description" content="View the finalists and vote for your favorite camouflage designs." />
   <meta name="twitter:image" content="https://aeson000.github.io/camo-contest/Finalists/embed.png" />
 
-  <link rel="stylesheet" href="styles_public.css" />
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <header class="topbar">
@@ -39,6 +39,14 @@
   <main>
     <section id="tileGrid" class="tile-grid" aria-live="polite"></section>
   </main>
+
+  <section id="selectionBar" class="selection-bar" aria-live="polite">
+    <div class="selection-content">
+      <span id="selectionLabel"></span>
+      <code id="selectionOutput"></code>
+    </div>
+    <button id="copyButton" type="button"></button>
+  </section>
 
   <div id="renderModal" class="modal" hidden>
     <button id="modalBackdrop" class="modal-backdrop" type="button" aria-label="Close"></button>
@@ -60,6 +68,6 @@
     </div>
   </div>
 
-  <script src="app_public.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>
