@@ -1,0 +1,18 @@
+{
+  "siteTitle": "迷彩选择器",
+  "pageTitle": "迷彩选择器",
+  "language": "语言",
+  "selectedIds": "已选择 ID：",
+  "copy": "复制",
+  "copied": "已复制",
+  "noneSelected": "无",
+  "previous": "上一张",
+  "next": "下一张",
+  "close": "关闭",
+  "select": "选择",
+  "view": "查看",
+  "viewRenders": "查看渲染图",
+  "render": "渲染图",
+  "discordButton": "Discord",
+  "discordUrl": "https://discord.gg/your-cn-invite"
+}

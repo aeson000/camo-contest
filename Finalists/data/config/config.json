@@ -1,0 +1,95 @@
+{
+  "version": 1,
+  "tiles": [
+    {
+      "id": "camo_001",
+      "name": "Camouflage 1",
+      "tileImage": "tile_01.png",
+      "renders": [
+        "render_01_a.png",
+        "render_01_b.png"
+      ]
+    },
+    {
+      "id": "camo_002",
+      "name": "Camouflage 2",
+      "tileImage": "tile_02.png",
+      "renders": [
+        "render_02_a.png",
+        "render_02_b.png"
+      ]
+    },
+    {
+      "id": "camo_003",
+      "name": "Camouflage 3",
+      "tileImage": "tile_03.png",
+      "renders": [
+        "render_03_a.png",
+        "render_03_b.png"
+      ]
+    },
+    {
+      "id": "camo_004",
+      "name": "Camouflage 4",
+      "tileImage": "tile_04.png",
+      "renders": [
+        "render_04_a.png",
+        "render_04_b.png"
+      ]
+    },
+    {
+      "id": "camo_005",
+      "name": "Camouflage 5",
+      "tileImage": "tile_05.png",
+      "renders": [
+        "render_05_a.png",
+        "render_05_b.png"
+      ]
+    },
+    {
+      "id": "camo_006",
+      "name": "Camouflage 6",
+      "tileImage": "tile_06.png",
+      "renders": [
+        "render_06_a.png",
+        "render_06_b.png"
+      ]
+    },
+    {
+      "id": "camo_007",
+      "name": "Camouflage 7",
+      "tileImage": "tile_07.png",
+      "renders": [
+        "render_07_a.png",
+        "render_07_b.png"
+      ]
+    },
+    {
+      "id": "camo_008",
+      "name": "Camouflage 8",
+      "tileImage": "tile_08.png",
+      "renders": [
+        "render_08_a.png",
+        "render_08_b.png"
+      ]
+    },
+    {
+      "id": "camo_009",
+      "name": "Camouflage 9",
+      "tileImage": "tile_09.png",
+      "renders": [
+        "render_09_a.png",
+        "render_09_b.png"
+      ]
+    },
+    {
+      "id": "camo_010",
+      "name": "Camouflage 10",
+      "tileImage": "tile_10.png",
+      "renders": [
+        "render_10_a.png",
+        "render_10_b.png"
+      ]
+    }
+  ]
+}
