@@ -1,6 +1,6 @@
-const CONFIG_PATH = "data/config/config.json";
-const LOCALE_MANIFEST_PATH = "data/locale/index.json";
-const LOCALE_DIRECTORY = "data/locale/";
+const CONFIG_PATH = "data_2/config/config.json";
+const LOCALE_MANIFEST_PATH = "data_2/locale/index.json";
+const LOCALE_DIRECTORY = "data_2/locale/";
 const ASSET_VERSION_STORAGE_KEY = "siteAssetVersion";
 
 const state = {
@@ -32,6 +32,16 @@ const els = {
   renderCounter: document.querySelector("#renderCounter"),
 };
 
+function updateVisualViewportHeight() {
+  const viewportHeight = window.visualViewport?.height || window.innerHeight;
+  document.documentElement.style.setProperty("--visual-viewport-height", `${Math.floor(viewportHeight)}px`);
+}
+
+updateVisualViewportHeight();
+window.addEventListener("resize", updateVisualViewportHeight);
+window.visualViewport?.addEventListener("resize", updateVisualViewportHeight);
+window.visualViewport?.addEventListener("scroll", updateVisualViewportHeight);
+
 async function fetchJson(path) {
   const response = await fetch(path, { cache: "no-store" });
   if (!response.ok) throw new Error(`${response.status} ${response.statusText}: ${path}`);
@@ -56,7 +66,7 @@ function syncAssetVersion() {
 
 async function loadLocaleList() {
   // Browsers cannot list a static directory by themselves.
-  // The supplied data/locale/index.json is the portable locale manifest.
+  // The supplied data_2/locale/index.json is the portable locale manifest.
   // If your web server exposes directory listing as JSON, replace this loader.
   const manifest = await fetchJson(LOCALE_MANIFEST_PATH);
   return manifest.locales || [];
@@ -131,7 +141,7 @@ function renderTiles() {
     imageButton.addEventListener("click", () => openModal(tile));
 
     const image = document.createElement("img");
-    image.src = getVersionedAssetUrl(`data/tile/${tile.tileImage}`);
+    image.src = getVersionedAssetUrl(`data_2/tile/${tile.tileImage}`);
     image.alt = tile.name;
     image.loading = "lazy";
     imageButton.append(image);
@@ -220,7 +230,7 @@ function updateModal() {
   state.activeRenderIndex = ((state.activeRenderIndex % count) + count) % count;
 
   els.modalTitle.textContent = state.activeTile.name;
-  els.renderImage.src = getVersionedAssetUrl(`data/render/${renders[state.activeRenderIndex]}`);
+  els.renderImage.src = getVersionedAssetUrl(`data_2/render/${renders[state.activeRenderIndex]}`);
   els.renderImage.alt = `${state.activeTile.name} ${t("render", "render")} ${state.activeRenderIndex + 1}`;
   els.renderCounter.textContent = `${state.activeRenderIndex + 1} / ${count}`;
   els.previousRenderButton.disabled = count < 2;
@@ -260,7 +270,7 @@ async function init() {
     syncAssetVersion();
     state.locales = locales;
 
-    if (!state.locales.length) throw new Error("No locale files are listed in data/locale/index.json.");
+    if (!state.locales.length) throw new Error("No locale files are listed in data_2/locale/index.json.");
 
     buildLanguageSwitcher();
     await setLanguage(chooseInitialLanguage());

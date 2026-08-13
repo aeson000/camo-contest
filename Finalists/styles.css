@@ -205,12 +205,17 @@ main { padding: 18px; }
 .modal[hidden] { display: none; }
 
 .modal {
+  --modal-padding: clamp(16px, 4vw, 64px);
   position: fixed;
   inset: 0;
   z-index: 100;
   display: grid;
   place-items: center;
-  padding: clamp(24px, 5vw, 80px);
+  padding: var(--modal-padding);
+  width: 100vw;
+  height: var(--visual-viewport-height, 100dvh);
+  max-height: var(--visual-viewport-height, 100dvh);
+  overflow: hidden;
 }
 
 .modal-backdrop {
@@ -224,10 +229,12 @@ main { padding: 18px; }
 .modal-panel {
   position: relative;
   z-index: 1;
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
   width: min(1500px, 100%);
-  height: min(900px, calc(100vh - clamp(48px, 10vw, 160px)));
+  height: min(900px, calc(var(--visual-viewport-height, 100dvh) - (2 * var(--modal-padding))));
+  max-height: calc(var(--visual-viewport-height, 100dvh) - (2 * var(--modal-padding)));
+  min-height: 0;
   border: 1px solid #444;
   border-radius: 14px;
   background: #151515;
@@ -242,11 +249,15 @@ main { padding: 18px; }
   gap: 12px;
   padding: 12px 14px;
   border-bottom: 1px solid #333;
+  min-width: 0;
 }
 
 .modal-header h2 {
   margin: 0;
   font-size: 1.1rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .icon-button {
@@ -254,22 +265,32 @@ main { padding: 18px; }
   height: 42px;
   font-size: 1.65rem;
   line-height: 1;
+  flex: 0 0 auto;
 }
 
 .render-stage {
-  flex: 1;
+  min-width: 0;
   min-height: 0;
-  display: grid;
-  place-items: center;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   padding: 12px;
   background: #0b0b0b;
+  overflow: hidden;
 }
 
 .render-stage img {
   display: block;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
   max-width: 100%;
   max-height: 100%;
   object-fit: contain;
+  object-position: center center;
 }
 
 .render-controls {
@@ -279,6 +300,8 @@ main { padding: 18px; }
   gap: 14px;
   padding: 12px;
   border-top: 1px solid #333;
+  min-height: 0;
+  flex-wrap: wrap;
 }
 
 .error-message {
@@ -303,6 +326,5 @@ main { padding: 18px; }
   .discord-button { flex: 0 0 auto; min-width: 140px; }
   .selection-bar { flex-direction: column; }
   .selection-bar button { width: 100%; }
-  .modal { padding: 18px; }
-  .modal-panel { height: calc(100vh - 36px); }
+  .modal { --modal-padding: 18px; }
 }
