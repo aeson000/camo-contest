@@ -1,5 +1,9 @@
 {
   "version": 1,
+  "votingTimer": {
+    "option": 1,
+    "endTime": "2026-08-17T13:00:00+02:00"
+  },
   "tiles": [
     {
       "id": "camo_001",

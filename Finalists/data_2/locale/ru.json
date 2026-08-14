@@ -14,5 +14,8 @@
   "viewRenders": "Посмотреть рендеры",
   "render": "Рендер",
   "discordButton": "Голосовать здесь!",
-  "discordUrl": "https://discord.gg/mkNtBAYcWy"
+  "discordUrl": "https://discord.gg/mkNtBAYcWy",
+  "votingNotStarted": "Голосование ещё не началось",
+  "votingActive": "Голосование началось, голосуйте на сервере Discord!",
+  "votingEnded": "Голосование завершено."
 }

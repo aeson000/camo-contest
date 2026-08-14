@@ -7,9 +7,9 @@ const state = {
   config: null,
   locale: null,
   locales: [],
-  selectedIds: new Set(),
   activeTile: null,
   activeRenderIndex: 0,
+  timerInterval: null,
 };
 
 const els = {
@@ -17,11 +17,10 @@ const els = {
   languageLabel: document.querySelector("#languageLabel"),
   languageSelect: document.querySelector("#languageSelect"),
   discordButton: document.querySelector("#discordButton"),
+  votingTimer: document.querySelector("#votingTimer"),
+  countdownDisplay: document.querySelector("#countdownDisplay"),
+  votingStatus: document.querySelector("#votingStatus"),
   tileGrid: document.querySelector("#tileGrid"),
-  selectionBar: document.querySelector("#selectionBar"),
-  selectionLabel: document.querySelector("#selectionLabel"),
-  selectionOutput: document.querySelector("#selectionOutput"),
-  copyButton: document.querySelector("#copyButton"),
   renderModal: document.querySelector("#renderModal"),
   modalBackdrop: document.querySelector("#modalBackdrop"),
   modalTitle: document.querySelector("#modalTitle"),
@@ -98,7 +97,6 @@ async function setLanguage(language) {
   els.languageSelect.value = language;
   renderLocalizedText();
   renderTiles();
-  updateSelectionBar();
   updateModal();
 }
 
@@ -109,12 +107,11 @@ function renderLocalizedText() {
   els.discordButton.textContent = t("discordButton", "Discord");
   els.discordButton.href = t("discordUrl", "#");
   els.discordButton.setAttribute("aria-label", t("discordButton", "Discord"));
-  els.selectionLabel.textContent = t("selectedIds", "Selected IDs:");
-  els.copyButton.textContent = t("copy", "Copy");
   els.previousRenderButton.textContent = t("previous", "Previous");
   els.nextRenderButton.textContent = t("next", "Next");
   els.closeModalButton.setAttribute("aria-label", t("close", "Close"));
   els.modalBackdrop.setAttribute("aria-label", t("close", "Close"));
+  updateVotingTimer();
 }
 
 function buildLanguageSwitcher() {
@@ -124,6 +121,71 @@ function buildLanguageSwitcher() {
     option.value = code;
     option.textContent = code.toUpperCase();
     els.languageSelect.append(option);
+  }
+}
+
+
+function formatCountdown(milliseconds) {
+  const totalSeconds = Math.max(0, Math.floor(milliseconds / 1000));
+  const days = Math.floor(totalSeconds / 86400);
+  const hours = Math.floor((totalSeconds % 86400) / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+
+  const hh = String(hours).padStart(2, "0");
+  const mm = String(minutes).padStart(2, "0");
+  const ss = String(seconds).padStart(2, "0");
+
+  return days > 0 ? `${days}:${hh}:${mm}:${ss}` : `${hh}:${mm}:${ss}`;
+}
+
+function updateVotingTimer() {
+  if (!state.config || !state.locale) return;
+
+  const timerConfig = state.config.votingTimer || {};
+  const option = timerConfig.option;
+
+  if (option === 1) {
+    els.countdownDisplay.hidden = false;
+    els.countdownDisplay.textContent = "00:00:00";
+    els.votingStatus.textContent = t("votingNotStarted", "Voting has not started yet");
+    return;
+  }
+
+  if (option === 2) {
+    const endTime = Date.parse(timerConfig.endTime);
+
+    if (!Number.isFinite(endTime)) {
+      els.countdownDisplay.hidden = false;
+      els.countdownDisplay.textContent = "00:00:00";
+      els.votingStatus.textContent = t("votingNotStarted", "Voting has not started yet");
+      return;
+    }
+
+    const remaining = endTime - Date.now();
+
+    if (remaining <= 0) {
+      els.countdownDisplay.hidden = true;
+      els.votingStatus.textContent = t("votingEnded", "Voting has ended.");
+      return;
+    }
+
+    els.countdownDisplay.hidden = false;
+    els.countdownDisplay.textContent = formatCountdown(remaining);
+    els.votingStatus.textContent = t("votingActive", "Voting has begun, vote in the discord server!");
+  }
+}
+
+function startVotingTimer() {
+  if (state.timerInterval) {
+    clearInterval(state.timerInterval);
+    state.timerInterval = null;
+  }
+
+  updateVotingTimer();
+
+  if (state.config?.votingTimer?.option === 2) {
+    state.timerInterval = setInterval(updateVotingTimer, 1000);
   }
 }
 
@@ -148,22 +210,9 @@ function renderTiles() {
 
     const info = document.createElement("div");
     info.className = "tile-info";
-
-    const label = document.createElement("label");
-    const checkbox = document.createElement("input");
-    checkbox.type = "checkbox";
-    checkbox.checked = state.selectedIds.has(tile.id);
-    checkbox.setAttribute("aria-label", `${t("select", "Select")} ${tile.name}`);
-    checkbox.addEventListener("change", () => {
-      if (checkbox.checked) state.selectedIds.add(tile.id);
-      else state.selectedIds.delete(tile.id);
-      updateSelectionBar();
-    });
-
     const name = document.createElement("span");
+    name.className = "tile-name";
     name.textContent = tile.name;
-
-    label.append(checkbox, name);
 
     const viewButton = document.createElement("button");
     viewButton.type = "button";
@@ -172,38 +221,9 @@ function renderTiles() {
     viewButton.setAttribute("aria-label", `${t("viewRenders", "View renders")}: ${tile.name}`);
     viewButton.addEventListener("click", () => openModal(tile));
 
-    info.append(label, viewButton);
+    info.append(name, viewButton);
     card.append(imageButton, info);
     els.tileGrid.append(card);
-  }
-}
-
-function getSelectionText() {
-  return [...state.selectedIds].join(", ");
-}
-
-function updateSelectionBar() {
-  const text = getSelectionText();
-  els.selectionOutput.textContent = text || t("noneSelected", "None");
-  els.copyButton.disabled = state.selectedIds.size === 0;
-}
-
-async function copySelection() {
-  const text = getSelectionText();
-  if (!text) return;
-
-  try {
-    await navigator.clipboard.writeText(text);
-    const original = t("copy", "Copy");
-    els.copyButton.textContent = t("copied", "Copied");
-    setTimeout(() => { els.copyButton.textContent = original; }, 1200);
-  } catch {
-    const helper = document.createElement("textarea");
-    helper.value = text;
-    document.body.append(helper);
-    helper.select();
-    document.execCommand("copy");
-    helper.remove();
   }
 }
 
@@ -247,10 +267,16 @@ function validateConfig(config) {
   if (typeof config.version !== "number" || !Number.isFinite(config.version)) {
     throw new Error("config.version must be a number.");
   }
+  if (!config.votingTimer || ![1, 2].includes(config.votingTimer.option)) {
+    throw new Error("config.votingTimer.option must be 1 or 2.");
+  }
+  if (config.votingTimer.option === 2 && !Number.isFinite(Date.parse(config.votingTimer.endTime))) {
+    throw new Error("config.votingTimer.endTime must be a valid date/time when option is 2.");
+  }
   if (!Array.isArray(config.tiles)) throw new Error("config.tiles must be an array.");
   for (const tile of config.tiles) {
-    if (!tile.id || !tile.name || !tile.tileImage || !Array.isArray(tile.renders)) {
-      throw new Error("Every tile needs id, name, tileImage, and renders.");
+    if (!tile.name || !tile.tileImage || !Array.isArray(tile.renders)) {
+      throw new Error("Every tile needs name, tileImage, and renders.");
     }
     if (tile.renders.length !== 2) {
       throw new Error(`Tile ${tile.id} must have exactly two render images.`);
@@ -274,6 +300,7 @@ async function init() {
 
     buildLanguageSwitcher();
     await setLanguage(chooseInitialLanguage());
+    startVotingTimer();
   } catch (error) {
     console.error(error);
     els.tileGrid.innerHTML = `<div class="error-message">${error.message}</div>`;
@@ -281,7 +308,6 @@ async function init() {
 }
 
 els.languageSelect.addEventListener("change", event => setLanguage(event.target.value));
-els.copyButton.addEventListener("click", copySelection);
 els.modalBackdrop.addEventListener("click", closeModal);
 els.closeModalButton.addEventListener("click", closeModal);
 els.previousRenderButton.addEventListener("click", () => changeRender(-1));
