@@ -14,7 +14,7 @@
   "viewRenders": "View renders",
   "render": "render",
   "discordButton": "Vote Here!",
-  "discordUrl": "https://discord.gg/wotblitz",
+  "discordUrl": "https://wg-voting.aeson000.workers.dev",
   "votingNotStarted": "Voting has not started yet",
   "votingActive": "Voting has begun, vote in the discord server!",
   "votingEnded": "Voting has ended."
