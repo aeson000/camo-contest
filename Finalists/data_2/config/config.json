@@ -70,7 +70,7 @@
     },
     {
       "id": "camo_008",
-      "name": "Camouflage 8",
+      "name": "TheSTuT",
       "tileImage": "tile_08.png",
       "renders": [
         "render_08_a.png",
@@ -79,7 +79,7 @@
     },
     {
       "id": "camo_009",
-      "name": "Camouflage 9",
+      "name": "Speed_1999",
       "tileImage": "tile_09.png",
       "renders": [
         "render_09_a.png",
@@ -88,7 +88,7 @@
     },
     {
       "id": "camo_010",
-      "name": "Camouflage 10",
+      "name": "LeggBee",
       "tileImage": "tile_10.png",
       "renders": [
         "render_10_a.png",
