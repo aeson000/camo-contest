@@ -1,8 +1,8 @@
 {
-  "version": 1,
+  "version": 2,
   "votingTimer": {
     "option": 1,
-    "endTime": "2026-08-17T13:00:00+02:00"
+    "endTime": "2026-08-30T13:00:00+02:00"
   },
   "tiles": [
     {
