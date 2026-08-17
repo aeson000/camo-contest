@@ -7,7 +7,7 @@
   "tiles": [
     {
       "id": "camo_001",
-      "name": "Camouflage 1",
+      "name": "okamo_to_go2",
       "tileImage": "tile_01.png",
       "renders": [
         "render_01_a.png",
@@ -16,7 +16,7 @@
     },
     {
       "id": "camo_002",
-      "name": "Camouflage 2",
+      "name": "Parting_Ghost",
       "tileImage": "tile_02.png",
       "renders": [
         "render_02_a.png",
@@ -25,7 +25,7 @@
     },
     {
       "id": "camo_003",
-      "name": "Camouflage 3",
+      "name": "O08_",
       "tileImage": "tile_03.png",
       "renders": [
         "render_03_a.png",
@@ -34,7 +34,7 @@
     },
     {
       "id": "camo_004",
-      "name": "Camouflage 4",
+      "name": "polskiggg",
       "tileImage": "tile_04.png",
       "renders": [
         "render_04_a.png",
@@ -43,7 +43,7 @@
     },
     {
       "id": "camo_005",
-      "name": "Camouflage 5",
+      "name": "nordsud_M",
       "tileImage": "tile_05.png",
       "renders": [
         "render_05_a.png",
@@ -52,7 +52,7 @@
     },
     {
       "id": "camo_006",
-      "name": "Camouflage 6",
+      "name": "UkrainianWarrior2022",
       "tileImage": "tile_06.png",
       "renders": [
         "render_06_a.png",
@@ -61,7 +61,7 @@
     },
     {
       "id": "camo_007",
-      "name": "Camouflage 7",
+      "name": "Ba_Hung_warrior",
       "tileImage": "tile_07.png",
       "renders": [
         "render_07_a.png",
