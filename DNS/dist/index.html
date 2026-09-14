@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Choose a World of Tanks Blitz server, platform, and clusters, then get device-level blocking instructions.">
+  <meta name="theme-color" content="#0b0e12">
+  <title>Blitz Cluster Blocker</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230b0e12'/%3E%3Cpath d='M8 7h16v4H8zm0 7h11v4H8zm0 7h16v4H8z' fill='%235ee0c2'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="minimal.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <main>
+    <section class="selector" aria-label="Connection selection">
+      <div class="step">
+        <div class="step-heading"><span>01</span><div><h2>Server</h2><p>Choose one region</p></div></div>
+        <div class="choice-grid server-grid" id="server-options" role="radiogroup" aria-label="Server region"></div>
+      </div>
+      <div class="step">
+        <div class="step-heading"><span>02</span><div><h2>Platform</h2><p>Choose one device</p></div></div>
+        <div class="choice-grid platform-grid" id="platform-options" role="radiogroup" aria-label="Device platform"></div>
+      </div>
+      <div class="step cluster-step">
+        <div class="step-heading"><span>03</span><div><h2>Clusters</h2><p>Select one or more to block</p></div></div>
+        <div class="cluster-grid" id="cluster-options"></div>
+      </div>
+    </section>
+
+    <section class="output" id="results" aria-live="polite">
+      <div class="output-head">
+        <div><p class="eyebrow">Your block list</p><h2>Selected endpoints</h2></div>
+        <button class="copy-button" id="copy-domains" type="button" disabled>Copy domains</button>
+      </div>
+      <div class="endpoint-list" id="endpoint-list">
+        <p class="empty-state">Select at least one cluster to generate your block list.</p>
+      </div>
+    </section>
+
+    <section class="guides" aria-label="Blocking instructions">
+      <div id="platform-guide"></div>
+    </section>
+  </main>
+
+</body>
+</html>

@@ -1,0 +1,23 @@
+main {
+  padding-top: 32px;
+  padding-bottom: 64px;
+}
+
+.guides {
+  margin-top: 20px;
+}
+
+.guide-content > p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.guide-content a {
+  color: var(--accent);
+}
+
+@media (max-width: 760px) {
+  main {
+    padding-top: 16px;
+  }
+}
