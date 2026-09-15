@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="World of Tanks Blitz camouflage and cluster tools.">
+  <meta name="theme-color" content="#0b0e12">
+  <title>aeson's toolkit</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230b0e12'/%3E%3Cpath d='M7 8h18v4H7zm0 6h12v4H7zm0 6h18v4H7z' fill='%235ee0c2'/%3E%3C/svg%3E">
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0b0e12;
+      --panel: #11161c;
+      --panel-hover: #14201f;
+      --line: #28323d;
+      --text: #edf3f2;
+      --muted: #94a2a6;
+      --accent: #5ee0c2;
+      --max: 980px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+      font-size: 16px;
+      line-height: 1.5;
+    }
+
+    main {
+      width: min(var(--max), calc(100% - 40px));
+      margin: 0 auto;
+      padding: 64px 0;
+    }
+
+    .eyebrow {
+      margin: 0 0 10px;
+      color: var(--accent);
+      font-size: .75rem;
+      font-weight: 800;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(2.1rem, 6vw, 4rem);
+      line-height: 1;
+      letter-spacing: -.045em;
+    }
+
+    .intro {
+      margin: 18px 0 40px;
+      color: var(--muted);
+    }
+
+    .tool-list {
+      border: 1px solid var(--line);
+      background: var(--panel);
+    }
+
+    .tool {
+      display: grid;
+      grid-template-columns: 46px minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 18px;
+      min-height: 92px;
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--line);
+      color: var(--text);
+      text-decoration: none;
+      transition: background-color .15s, border-color .15s;
+    }
+
+    .tool:last-child { border-bottom: 0; }
+    .tool:hover { background: var(--panel-hover); }
+    .tool:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+    .number {
+      color: var(--accent);
+      font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+      font-size: .78rem;
+      font-weight: 800;
+    }
+
+    .tool strong {
+      display: block;
+      font-size: 1.05rem;
+      letter-spacing: -.015em;
+    }
+
+    .tool small {
+      display: block;
+      margin-top: 3px;
+      overflow: hidden;
+      color: var(--muted);
+      font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+      font-size: .75rem;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .arrow {
+      color: var(--muted);
+      font-size: 1.25rem;
+      transition: color .15s, transform .15s;
+    }
+
+    .tool:hover .arrow {
+      color: var(--accent);
+      transform: translateX(3px);
+    }
+
+    @media (max-width: 600px) {
+      main { width: min(100% - 28px, var(--max)); padding: 34px 0; }
+      .intro { margin-bottom: 26px; }
+      .tool { grid-template-columns: 30px minmax(0, 1fr) auto; gap: 10px; padding: 17px 15px; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <p class="eyebrow">WoT Blitz</p>
+    <h1>Tools</h1>
+    <p class="intro">Select a tool to continue.</p>
+
+    <nav class="tool-list" aria-label="Available tools">
+      <a class="tool" href="https://camo.aeson000.com/">
+        <span class="number">01</span>
+        <span><strong>New Camo Contest Tool</strong><small>camo.aeson000.com</small></span>
+        <span class="arrow" aria-hidden="true">→</span>
+      </a>
+      <a class="tool" href="2026_Tool.html">
+        <span class="number">02</span>
+        <span><strong>Camo Contest Basic Tool</strong><small>2026_Tool.html</small></span>
+        <span class="arrow" aria-hidden="true">→</span>
+      </a>
+      <a class="tool" href="2026_Tool_legacy.html">
+        <span class="number">03</span>
+        <span><strong>Camo Contest Legacy Tool</strong><small>2026_Tool_legacy.html</small></span>
+        <span class="arrow" aria-hidden="true">→</span>
+      </a>
+      <a class="tool" href="Finalists/index.html">
+        <span class="number">04</span>
+        <span><strong>Camo Contest Finalists Viewer</strong><small>Finalists/index.html</small></span>
+        <span class="arrow" aria-hidden="true">→</span>
+      </a>
+      <a class="tool" href="DNS/dist/index.html">
+        <span class="number">05</span>
+        <span><strong>WoTBlitz Cluster Blocking Information</strong><small>DNS/dist/index.html</small></span>
+        <span class="arrow" aria-hidden="true">→</span>
+      </a>
+    </nav>
+  </main>
+</body>
+</html>
