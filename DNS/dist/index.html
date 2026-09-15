@@ -13,24 +13,24 @@
 </head>
 <body>
   <main>
-    <section class="selector" aria-label="Connection selection">
+    <section class="selector" id="connection-selector" aria-label="Connection selection">
       <div class="step">
-        <div class="step-heading"><span>01</span><div><h2>Server</h2><p>Choose one region</p></div></div>
+        <div class="step-heading"><span>01</span><div><h2 id="server-heading">Server</h2><p id="server-help">Choose one region</p></div></div>
         <div class="choice-grid server-grid" id="server-options" role="radiogroup" aria-label="Server region"></div>
       </div>
-      <div class="step">
-        <div class="step-heading"><span>02</span><div><h2>Platform</h2><p>Choose one device</p></div></div>
-        <div class="choice-grid platform-grid" id="platform-options" role="radiogroup" aria-label="Device platform"></div>
-      </div>
       <div class="step cluster-step">
-        <div class="step-heading"><span>03</span><div><h2>Clusters</h2><p>Select one or more to block</p></div></div>
+        <div class="step-heading"><span>02</span><div><h2 id="clusters-heading">Clusters</h2><p id="clusters-help">Select one or more to block</p></div></div>
         <div class="cluster-grid" id="cluster-options"></div>
+        <div class="selection-warning" id="all-clusters-warning" role="alert" hidden>
+          <strong id="all-warning-title">Keep at least one cluster open</strong>
+          <p id="all-warning-text">Blocking every cluster will prevent you from logging into the game. Deselect at least one cluster before applying these rules.</p>
+        </div>
       </div>
     </section>
 
     <section class="output" id="results" aria-live="polite">
       <div class="output-head">
-        <div><p class="eyebrow">Your block list</p><h2>Selected endpoints</h2></div>
+        <div><p class="eyebrow" id="block-list-label">Your block list</p><h2 id="endpoints-heading">Selected endpoints</h2></div>
         <button class="copy-button" id="copy-domains" type="button" disabled>Copy domains</button>
       </div>
       <div class="endpoint-list" id="endpoint-list">
@@ -38,10 +38,28 @@
       </div>
     </section>
 
+    <section class="platform-selector" id="platform-selector" aria-label="Platform selection">
+      <div class="step">
+        <div class="step-heading"><span>03</span><div><h2 id="platform-heading">Platform</h2><p id="platform-help">Choose one device</p></div></div>
+        <div class="choice-grid platform-grid" id="platform-options" role="radiogroup" aria-label="Device platform"></div>
+      </div>
+    </section>
+
     <section class="guides" aria-label="Blocking instructions">
       <div id="platform-guide"></div>
+      <aside class="instruction-disclaimer" id="instruction-disclaimer">
+        <p><strong id="recent-title">Recently connected to the wrong cluster?</strong> <span id="recent-text">Wait 20 minutes before logging in again so the server can reassign you to an available cluster.</span></p>
+        <p><strong id="restart-title">Leaving only one cluster open?</strong> <span id="restart-text">During server restarts—usually after midnight for most servers—you will not be able to log in until that cluster has restarted.</span></p>
+      </aside>
     </section>
   </main>
+
+  <dialog class="region-dialog" id="netease-dialog" aria-labelledby="netease-dialog-title">
+    <div class="dialog-mark" aria-hidden="true">!</div>
+    <h2 id="netease-dialog-title">NetEase region only</h2>
+    <p>These cluster addresses and instructions apply only to the NetEase version of World of Tanks Blitz in China. Do not use them for NA, EU, or Asia accounts.</p>
+    <button type="button" id="netease-dialog-close">Continue</button>
+  </dialog>
 
 </body>
 </html>
