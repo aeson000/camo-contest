@@ -1,7 +1,7 @@
 const DATA={
 NA:[{key:'NA_C0',id:0,location:'Chicago',zh:'芝加哥',url:'login0.wotblitz.com:20016'},{key:'NA_C2',id:2,location:'California',zh:'加利福尼亚',url:'login2.wotblitz.com:20016'},{key:'NA_C3',id:3,location:'São Paulo, Brazil',zh:'巴西圣保罗',url:'login3.wotblitz.com:20016'}],
 EU:[{key:'EU_C0',id:0,location:'Netherlands',zh:'荷兰',url:'login0.wotblitz.eu:20016'},{key:'EU_C3',id:3,location:'Poland',zh:'波兰',url:'login3.wotblitz.eu:20016'},{key:'EU_C4',id:4,location:'Kazakhstan',zh:'哈萨克斯坦',url:'login4.wotblitz.eu:20016'}],
-ASIA:[{key:'SG_C0',id:0,location:'Singapore',zh:'新加坡',url:'login0.wotblitz.asia:20016'},{key:'SG_C1',id:1,location:'Singapore',zh:'新加坡',url:'login1.wotblitz.asia:20016'},{key:'SG_C2',id:2,location:'Japan',zh:'日本',url:'login2.wotblitz.asia:20016'},{key:'SG_C3',id:3,location:'Indonesia',zh:'印度尼西亚',url:'login3.wotblitz.asia:20016'}],
+ASIA:[{key:'SG_C0',id:0,location:'Singapore',zh:'新加坡',url:'login0.wotblitz.asia:20016'},{key:'SG_C1',id:1,location:'Singapore',zh:'新加坡',url:'login1.wotblitz.asia:20016'},{key:'SG_C2',id:2,location:'Japan',zh:'日本',url:'login2.wotblitz.asia:20016'},{key:'SG_C3',id:3,location:'Indonesia',zh:'印度尼西亚',url:'login3.wotblitz.asia:20016'},{key:'SG_C4',id:4,location:'Tokyo, Japan',zh:'日本东京',url:'login4.wotblitz.asia:20016'}],
 NETEASE:[{key:'CN1_C0',id:0,location:'Guanzhou, China',zh:'中国广州',url:'wotblitzcn0.login.wargaming.net:20016'},{key:'CN1_C1',id:1,location:'Guanzhou, China',zh:'中国广州',url:'wotblitzcn1.login.wargaming.net:20016'}]};
 const SERVERS={NA:{en:'NA',zh:'北美',flag:'assets/NA.jpg'},EU:{en:'EU',zh:'欧洲',flag:'assets/EU.jpg'},ASIA:{en:'ASIA',zh:'亚洲',flag:'assets/SG.jpg'},NETEASE:{en:'网易',zh:'网易',flag:'assets/CN.jpg'}};
 const PLATFORMS=['Windows','macOS','Android','iOS'];
